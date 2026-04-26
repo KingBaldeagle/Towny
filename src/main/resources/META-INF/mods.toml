@@ -1,0 +1,11 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="neo_towny"
+version="1.0.0"
+displayName="NeoTowny"
+description='A NeoForge port of the Towny Bukkit plugin with Lightman's Currency integration.'
+logoFile="icon.png"
+credits="Original Towny by a plugin author"
+authors=["YourName"]

@@ -1,0 +1,63 @@
+// Gradle build script for NeoTowny mod
+plugins {
+    id 'java'
+    id 'net.neoforged.gradle.userdev' version '7.0.154'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "forge"
+        url = uri('https://maven.neoforged.net/releases/')
+    }
+    maven {
+        name = "lightmans"
+        url = uri('https://maven.pkg.github.com/Lightman's-Currency/LightmansCurrency')
+        credentials {
+            username = System.getenv('GITHUB_ACTOR')
+            password = System.getenv('GITHUB_TOKEN')
+        }
+    }
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:21.1.0"
+    // Lightman's Currency API (replace with actual coordinates)
+    implementation "io.github.lightmanscurrency:lightmanscurrency:1.21.1-1.0.0"
+}
+
+def modsTomlFile = file('src/main/resources/META-INF/mods.toml')
+
+tasks.register('processModsToml') {
+    doLast {
+        if (!modsTomlFile.exists()) {
+            modsTomlFile.parentFile.mkdirs()
+            modsTomlFile.text = '''
+mods.toml placeholder
+'''
+        }
+    }
+}
+
+sourceSets.main.resources.srcDir 'src/main/resources'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Specification-Title': project.name,
+                'Specification-Vendor': 'YourName',
+                'Specification-Version': '1.0',
+                'Implementation-Title': project.name,
+                'Implementation-Version': version,
+                'Implementation-Vendor': 'YourName'
+        )
+    }
+    from(sourceSets.main.output)
+    from(processModsToml)
+}

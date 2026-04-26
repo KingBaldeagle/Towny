@@ -1,0 +1,13 @@
+{
+  "itemGroup.towny": "Example Mod Tab",
+  "block.towny.example_block": "Example Block",
+  "item.towny.example_item": "Example Item",
+
+  "towny.configuration.title": "Towny Configs",
+  "towny.configuration.section.towny.common.toml": "Towny Configs",
+  "towny.configuration.section.towny.common.toml.title": "Towny Configs",
+  "towny.configuration.items": "Item List",
+  "towny.configuration.logDirtBlock": "Log Dirt Block",
+  "towny.configuration.magicNumberIntroduction": "Magic Number Text",
+  "towny.configuration.magicNumber": "Magic Number"
+}
