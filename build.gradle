@@ -1,7 +1,7 @@
 // Gradle build script for NeoTowny mod
 plugins {
     id 'java'
-    id 'net.neoforged.gradle.userdev' version '7.0.57'
+    id 'net.neoforged.gradle.userdev' version '7.0.154'
 }
 
 repositories {
@@ -11,14 +11,19 @@ repositories {
         url = uri('https://maven.neoforged.net/releases/')
     }
     maven {
-        name = "modrinth"
-        url = uri('https://api.modrinth.com/maven')
+        name = "lightmans"
+        url = uri('https://maven.pkg.github.com/Lightman's-Currency/LightmansCurrency')
+        credentials {
+            username = System.getenv('GITHUB_ACTOR')
+            password = System.getenv('GITHUB_TOKEN')
+        }
     }
 }
 
 dependencies {
     implementation "net.neoforged:neoforge:21.1.0"
-    implementation("maven.modrinth:lightmans-currency:1.21-2.3.0.4e")
+    // Lightman's Currency API (replace with actual coordinates)
+    implementation "io.github.lightmanscurrency:lightmanscurrency:1.21.1-1.0.0"
 }
 
 def modsTomlFile = file('src/main/resources/META-INF/mods.toml')
@@ -46,7 +51,7 @@ jar {
     manifest {
         attributes(
                 'Specification-Title': project.name,
-                'Specification-Vendor': 'YourName',
+                'Specification-Vendor': 'Baldeagle',
                 'Specification-Version': '1.0',
                 'Implementation-Title': project.name,
                 'Implementation-Version': version,
