@@ -13,6 +13,11 @@ This document outlines the high‑level steps required to re‑implement the Buk
 4. **Plot** – port plot data structures and ownership.
 5. **World / TownyUniverse** – central registry for all objects.
 
+### Current Status (as of 2026-04-28)
+- ✅ Resident/Town/Nation linkage skeleton is implemented.
+- ✅ Initial in-memory `TownyUniverse` registry added (resident/town/nation create + lookup flows).
+- 🚧 Persistence, world/chunk registries, and command wiring are still pending.
+
 ## 3. Configuration & persistence
 - Convert `towny.yml` and other YAML configs to NeoForge‑compatible config (ForgeConfigSpec).
 - Implement data storage using Minecraft’s `LevelSavedData` (NBT) for towns, nations, residents.
