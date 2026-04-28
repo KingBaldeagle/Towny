@@ -3,6 +3,9 @@ package com.baldeagle.towny.object.universe;
 import com.baldeagle.towny.object.nation.Nation;
 import com.baldeagle.towny.object.resident.Resident;
 import com.baldeagle.towny.object.town.Town;
+import com.baldeagle.towny.object.townblock.TownBlock;
+import com.baldeagle.towny.object.world.TownyWorld;
+import com.baldeagle.towny.object.world.WorldCoord;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +32,9 @@ public final class TownyUniverse {
 
     private final Map<UUID, Nation> nationsById = new ConcurrentHashMap<>();
     private final Map<String, Nation> nationsByName = new ConcurrentHashMap<>();
+
+    private final Map<WorldCoord, TownBlock> townBlocksByWorldCoord = new ConcurrentHashMap<>();
+    private final Map<String, TownyWorld> worldsByName = new ConcurrentHashMap<>();
 
     private TownyUniverse() {}
 
@@ -139,6 +145,48 @@ public final class TownyUniverse {
         nationsById.put(nation.getUUID(), nation);
         nationsByName.put(normalized, nation);
         return nation;
+    }
+
+    public TownyWorld registerWorld(String worldName) {
+        String normalized = normalize(worldName);
+        return worldsByName.computeIfAbsent(normalized, key -> new TownyWorld(UUID.randomUUID(), worldName));
+    }
+
+    public Optional<TownyWorld> getWorld(String worldName) {
+        return Optional.ofNullable(worldsByName.get(normalize(worldName)));
+    }
+
+    public Collection<TownyWorld> getWorlds() {
+        return Collections.unmodifiableCollection(worldsByName.values());
+    }
+
+    public TownBlock claimTownBlock(Town town, WorldCoord worldCoord) {
+        if (town == null || worldCoord == null) {
+            throw new IllegalArgumentException("town/worldCoord must not be null");
+        }
+        TownyWorld world = registerWorld(worldCoord.worldName());
+        if (!world.isUsingTowny() || !world.isClaimable()) {
+            throw new IllegalStateException("World is not claimable: " + world.getName());
+        }
+        if (townBlocksByWorldCoord.containsKey(worldCoord)) {
+            throw new IllegalStateException("Town block already claimed: " + worldCoord);
+        }
+
+        TownBlock townBlock = new TownBlock(UUID.randomUUID(), town.getName() + "-" + worldCoord.coord(), worldCoord, town);
+        town.addTownBlock(townBlock);
+        townBlocksByWorldCoord.put(worldCoord, townBlock);
+        if (!town.hasHomeBlock()) {
+            town.setHomeBlock(worldCoord);
+        }
+        return townBlock;
+    }
+
+    public Optional<TownBlock> getTownBlock(WorldCoord worldCoord) {
+        return Optional.ofNullable(townBlocksByWorldCoord.get(worldCoord));
+    }
+
+    public Collection<TownBlock> getTownBlocks() {
+        return Collections.unmodifiableCollection(townBlocksByWorldCoord.values());
     }
 
     private String normalize(String name) {

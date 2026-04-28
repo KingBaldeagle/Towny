@@ -5,6 +5,7 @@
 ### Added
 - Added `Nation` domain model at `com.baldeagle.towny.object.nation.Nation` with capital + member town management.
 - Added initial `TownyUniverse` central registry for resident/town/nation creation and lookups.
+- Added phase-1 world/claim object types: `Coord`, `WorldCoord`, `TownyWorld`, `TownBlock`, and `TownBlockType`.
 
 ### Changed
 - Refactored `Town` to extend `Government` and support mayor/nation links.
@@ -14,3 +15,4 @@
 - Expanded economy provider contracts to use copper-unit operations and denomination breakdown/formatting.
 - Documented Lightman's Currency implementation status in economy spec docs.
 - Updated implementation plan status to reflect initial TownyUniverse progress.
+- Extended `Town` and `TownyUniverse` with basic town-block claim/home-block flows.
