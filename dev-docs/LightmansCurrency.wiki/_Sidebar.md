@@ -1,0 +1,7 @@
+[Home](https://github.com/Lightman314/LightmansCurrency/wiki)
+
+[Table of Contents](https://github.com/Lightman314/LightmansCurrency/wiki/Table-Of-Contents)
+
+[FAQ](https://github.com/Lightman314/LightmansCurrency/wiki/Frequently-Asked-Questions)
+
+[Changelogs](https://github.com/Lightman314/LightmansCurrency/wiki/Changelogs)
