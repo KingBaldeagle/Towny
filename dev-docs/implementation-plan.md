@@ -13,10 +13,26 @@ This document outlines the high‑level steps required to re‑implement the Buk
 4. **Plot** – port plot data structures and ownership.
 5. **World / TownyUniverse** – central registry for all objects.
 
+### Current Status (as of 2026-04-28)
+- ✅ Resident/Town/Nation linkage skeleton is implemented.
+- ✅ Initial in-memory `TownyUniverse` registry added (resident/town/nation/plot create + lookup flows).
+- ✅ Added phase-1 value/object types for world/claim modeling (`Coord`, `WorldCoord`, `TownyWorld`, `TownBlock`, `TownBlockType`) and wired basic claim flow in `TownyUniverse`.
+- ✅ **Phase 1 core data model migration is complete** (Resident, Town, Nation, Plot, World/TownyUniverse in place).
+- 🚧 Persistence wiring is intentionally deferred to Phase 2, along with command integration.
+
 ## 3. Configuration & persistence
 - Convert `towny.yml` and other YAML configs to NeoForge‑compatible config (ForgeConfigSpec).
 - Implement data storage using Minecraft’s `LevelSavedData` (NBT) for towns, nations, residents.
 - Provide migration scripts from existing flat‑file format if needed.
+
+### Phase 2 Kickoff Status (as of 2026-04-28)
+- ✅ Added `TownyDataSource` abstraction for load/save operations.
+- ✅ Added `JsonTownyDataSource` bootstrap implementation writing to `config/towny/universe.json`.
+- ✅ JSON snapshot now covers Residents, Towns, Nations, Worlds, TownBlocks, and Plots.
+- ✅ Added directory-based JSON storage (`residents/`, `towns/`, `nations/`, `townblocks/`, `worlds/`, `plots/`).
+- ✅ Added persistence backend config selection (`json_snapshot` vs `directory_json`) via common config.
+- ✅ **Phase 2 is complete for the current JSON persistence track.**
+- 🚧 Optional future enhancement: move from JSON backends to `LevelSavedData` once command/event lifecycle is fully wired.
 
 ## 4. Command framework migration
 - Replace Bukkit command registration with NeoForge's `CommandDispatcher` (`net.minecraft.commands.Commands`).

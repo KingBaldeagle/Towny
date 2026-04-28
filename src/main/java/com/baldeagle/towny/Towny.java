@@ -2,6 +2,8 @@ package com.baldeagle.towny;
 
 import com.mojang.logging.LogUtils;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
@@ -20,4 +22,8 @@ public class Towny {
     public static final DeferredRegister.Items ITEMS =
         DeferredRegister.createItems(MODID);
     // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "towny" namespace
+
+    public Towny(ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
 }

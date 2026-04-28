@@ -35,9 +35,15 @@ A **Plot** is a land parcel within a town. Plots have owners, types, and permiss
 - Handle world unload – persist plot data.
 
 ## Integration Points
-- `TownBlock` class (`com.baldeagle.towny.object.TownBlock`).
+- `Plot` class (`com.baldeagle.towny.object.plot.Plot`).
+- `TownBlock` class (`com.baldeagle.towny.object.townblock.TownBlock`).
 - Events: `TownBlockClaimEvent`, `TownBlockUnclaimEvent`, `TownBlockOwnerChangeEvent`.
 - Economy: claim cost deducted from town account.
+
+## Implementation Status (as of 2026-04-28)
+- ✅ Added phase-1 `Plot` model with world coordinate, town/owner linkage, and for-sale/price metadata.
+- ✅ Added plot registration and lookups in `TownyUniverse` (`createPlot`, `getPlot`, `getPlots`).
+- 🚧 Plot permission flags, taxes, and command/event wiring are still pending.
 
 ## Tests
 - Claim flow success and failure (adjacent, max limit).

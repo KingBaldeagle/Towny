@@ -11,6 +11,11 @@ NeoTowny uses LightmansCurrency as its sole economy backend. This means:
 - Town bank accounts use LC's Team system
 - Formatting uses LC's built-in money formatting
 
+## Current Implementation Status (as of 2026-04-28)
+- ✅ `EconomyProvider` interface now defines core operations (`getBalance`, `withdraw`, `deposit`, `transfer`, `format`, denomination `breakdown`) using copper units.
+- ✅ `LightmansCurrencyProvider` includes denomination-aware formatting and conversion helpers matching this spec.
+- 🚧 Direct wiring to LC wallet/team APIs is not implemented yet; behavior currently uses an in-memory fallback map.
+
 ---
 
 ## Account Types

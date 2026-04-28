@@ -24,7 +24,7 @@ public class Resident extends TownyObject {
     public Town getTown() { return town; }
 
     public boolean isMayor() {
-        return town != null && town.getMayor().equals(this);
+        return town != null && this.equals(town.getMayor());
     }
 
     public boolean isKing() {

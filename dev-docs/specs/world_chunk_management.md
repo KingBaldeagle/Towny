@@ -55,10 +55,15 @@ world-management:
 - **Concurrent Claims** – Since Bukkit runs on a single thread for world modifications, two players cannot claim the same chunk simultaneously; the second attempt receives a “already claimed” message.
 
 ## Integration Points
-- `TownBlock` class (`com.baldeagle.towny.object.TownBlock`).
+- `TownBlock` class (`com.baldeagle.towny.object.townblock.TownBlock`).
 - Event listeners: `TownyBlockListener` registers for `ChunkLoadEvent`, `ChunkUnloadEvent`, `WorldLoadEvent`, and `WorldUnloadEvent`.
 - Permissions: `TownBlock.getPermissions()` returns a `TownyPermission` object used by the permission system.
 - Persistence helpers: `TownyDataSource` handles reading/writing of claim data.
+
+## Implementation Status (as of 2026-04-28)
+- ✅ Added core world/claim value objects: `Coord`, `WorldCoord`, and `TownyWorld`.
+- ✅ Added `TownBlock` + `TownBlockType` models and basic claim registration via `TownyUniverse#claimTownBlock`.
+- 🚧 Event listeners, protection checks, and persisted claim storage are still pending.
 
 ## Events
 - `TownBlockClaimEvent` – fired before a claim is finalized; cancelable.

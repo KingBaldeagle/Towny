@@ -27,9 +27,14 @@ A **Resident** represents a player in the Neo‑Towny system. Residents can belo
 - Correctly handle offline residents during tax collection.
 
 ## Integration Points
-- `Resident` class (`com.baldeagle.towny.object.Resident`).
+- `Resident` class (`com.baldeagle.towny.object.resident.Resident`).
 - Events: `ResidentJailEvent`, `ResidentUnjailEvent`, `ResidentToggleModeEvent`.
 - Economy: `Resident.getAccount()`.
+
+## Implementation Status (as of 2026-04-28)
+- ✅ `Resident#isMayor()` uses a null-safe mayor comparison with `town.getMayor()`.
+- ✅ Resident has town/nation linkage helpers (`hasTown`, `getTown`, `hasNation`).
+- 🚧 Nation/king behavior remains TODO (`isKing()` still returns false).
 
 ## Tests
 - Automatic creation on login.
