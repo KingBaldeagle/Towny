@@ -26,3 +26,8 @@ If the player only had **15 iron** and **0 gold**, the system would convert 
 
 ## Pricing in Specifications
 All prices in Neo‑Towny specifications are expressed in **copper units** to avoid ambiguity. For example, a plot priced at "1 gold" should be written as **100 copper** in the spec. The implementation will handle conversion to the appropriate coin items when displaying or processing the transaction.
+
+## Implementation Status (as of 2026-04-28)
+- ✅ Economy abstraction now uses copper-unit values (`long`) for balances and transfers.
+- ✅ Denomination breakdown/formatting helpers are implemented in `LightmansCurrencyProvider`.
+- 🚧 Real wallet/team API calls to Lightman's Currency are still pending; current provider uses in-memory balances as an integration-safe fallback.

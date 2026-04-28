@@ -1,28 +1,43 @@
 package com.baldeagle.towny.object.plot;
 
+import com.baldeagle.towny.object.TownyObject;
 import com.baldeagle.towny.object.resident.Resident;
+import com.baldeagle.towny.object.town.Town;
+import com.baldeagle.towny.object.world.WorldCoord;
 import java.util.UUID;
 
-/** Minimal Plot representation */
-public class Plot {
-    private final UUID uuid;
-    private final String worldName;
-    private final int x;
-    private final int z;
+/**
+ * Phase-1 plot model used for ownership and sale metadata.
+ */
+public class Plot extends TownyObject {
+    private final WorldCoord worldCoord;
+    private Town town;
     private Resident owner;
+    private boolean forSale = false;
+    private long priceInCopper = 0L;
 
-    public Plot(UUID uuid, String worldName, int x, int z, Resident owner) {
-        this.uuid = uuid;
-        this.worldName = worldName;
-        this.x = x;
-        this.z = z;
+    public Plot(UUID uuid, String name, WorldCoord worldCoord, Town town, Resident owner) {
+        super(uuid, name);
+        this.worldCoord = worldCoord;
+        this.town = town;
         this.owner = owner;
     }
 
-    public UUID getUUID() { return uuid; }
-    public String getWorldName() { return worldName; }
-    public int getX() { return x; }
-    public int getZ() { return z; }
+    public WorldCoord getWorldCoord() { return worldCoord; }
+    public Town getTown() { return town; }
+    public void setTown(Town town) { this.town = town; }
+
     public Resident getOwner() { return owner; }
     public void setOwner(Resident owner) { this.owner = owner; }
+
+    public boolean isForSale() { return forSale; }
+    public void setForSale(boolean forSale) { this.forSale = forSale; }
+
+    public long getPriceInCopper() { return priceInCopper; }
+    public void setPriceInCopper(long priceInCopper) {
+        if (priceInCopper < 0) {
+            throw new IllegalArgumentException("priceInCopper must be >= 0");
+        }
+        this.priceInCopper = priceInCopper;
+    }
 }

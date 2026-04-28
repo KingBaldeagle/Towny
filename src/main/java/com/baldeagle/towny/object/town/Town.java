@@ -3,10 +3,14 @@ package com.baldeagle.towny.object.town;
 import com.baldeagle.towny.object.Government;
 import com.baldeagle.towny.object.nation.Nation;
 import com.baldeagle.towny.object.resident.Resident;
+import com.baldeagle.towny.object.townblock.TownBlock;
+import com.baldeagle.towny.object.world.WorldCoord;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Town domain object.
@@ -18,6 +22,8 @@ public class Town extends Government {
     private Resident mayor;
     private Nation nation;
     private final Set<Resident> residents = new HashSet<>();
+    private final Map<WorldCoord, TownBlock> townBlocks = new ConcurrentHashMap<>();
+    private WorldCoord homeBlock;
 
     public Town(UUID uuid, String name, Resident mayor) {
         super(uuid, name);
@@ -61,6 +67,26 @@ public class Town extends Government {
     public boolean hasNation() { return nation != null; }
     public Nation getNation() { return nation; }
     public void setNation(Nation nation) { this.nation = nation; }
+
+    public Map<WorldCoord, TownBlock> getTownBlocks() {
+        return Collections.unmodifiableMap(townBlocks);
+    }
+
+    public boolean hasHomeBlock() { return homeBlock != null; }
+    public WorldCoord getHomeBlock() { return homeBlock; }
+    public void setHomeBlock(WorldCoord homeBlock) { this.homeBlock = homeBlock; }
+
+    public boolean addTownBlock(TownBlock townBlock) {
+        if (townBlock == null) {
+            return false;
+        }
+        townBlock.setTown(this);
+        return townBlocks.putIfAbsent(townBlock.getWorldCoord(), townBlock) == null;
+    }
+
+    public boolean removeTownBlock(WorldCoord worldCoord) {
+        return townBlocks.remove(worldCoord) != null;
+    }
 
     // Backward-compat convenience aliases for older code paths.
     public Resident getOwner() { return getMayor(); }
