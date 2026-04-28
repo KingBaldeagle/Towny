@@ -32,9 +32,16 @@ A **Nation** groups multiple towns under a shared government. Nations have ranks
 - Handle world unload – persist nation data.
 
 ## Integration Points
-- `Nation` class in `com.baldeagle.towny.object.Nation`.
+- `Nation` class in `com.baldeagle.towny.object.nation.Nation`.
 - Event hooks: `NationAddTownEvent`, `NationRemoveTownEvent`, `NationDeleteEvent`.
 - Economy via `TownyEconomyHandler`.
+
+## Implementation Status (as of 2026-04-28)
+- ✅ Added minimal `Nation` implementation with:
+  - capital tracking,
+  - member town set,
+  - bidirectional linkage updates when towns are added/removed.
+- 🚧 Nation ranks, alliances, war, and tax behavior are not implemented yet.
 
 ## Tests
 - Nation creation and king assignment.

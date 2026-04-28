@@ -1,32 +1,68 @@
 package com.baldeagle.towny.object.town;
 
+import com.baldeagle.towny.object.Government;
+import com.baldeagle.towny.object.nation.Nation;
 import com.baldeagle.towny.object.resident.Resident;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Minimal Town representation. Holds a set of residents, a name and an owner.
+ * Town domain object.
+ * <p>
+ * This follows the dev-docs phase 1 model enough for resident/town/nation links:
+ * mayor, residents, optional nation membership, and basic resident management.
  */
-public class Town {
-    private final UUID uuid;
-    private final String name;
-    private Resident owner;
+public class Town extends Government {
+    private Resident mayor;
+    private Nation nation;
     private final Set<Resident> residents = new HashSet<>();
 
-    public Town(UUID uuid, String name, Resident owner) {
-        this.uuid = uuid;
-        this.name = name;
-        this.owner = owner;
-        this.residents.add(owner);
+    public Town(UUID uuid, String name, Resident mayor) {
+        super(uuid, name);
+        setMayor(mayor);
     }
 
-    public UUID getUUID() { return uuid; }
-    public String getName() { return name; }
-    public Resident getOwner() { return owner; }
-    public void setOwner(Resident owner) { this.owner = owner; }
-    public Set<Resident> getResidents() { return residents; }
+    public Resident getMayor() { return mayor; }
+    public void setMayor(Resident mayor) {
+        this.mayor = mayor;
+        if (mayor != null) {
+            residents.add(mayor);
+            if (mayor.getTown() != this) {
+                mayor.setTown(this);
+            }
+        }
+    }
+    public Set<Resident> getResidents() { return Collections.unmodifiableSet(residents); }
 
-    public boolean addResident(Resident r) { return residents.add(r); }
-    public boolean removeResident(Resident r) { return residents.remove(r); }
+    public boolean addResident(Resident resident) {
+        if (resident == null) {
+            return false;
+        }
+        resident.setTown(this);
+        return residents.add(resident);
+    }
+
+    public boolean removeResident(Resident resident) {
+        if (resident == null) {
+            return false;
+        }
+        if (resident.equals(mayor)) {
+            return false;
+        }
+        boolean removed = residents.remove(resident);
+        if (removed && resident.getTown() == this) {
+            resident.setTown(null);
+        }
+        return removed;
+    }
+
+    public boolean hasNation() { return nation != null; }
+    public Nation getNation() { return nation; }
+    public void setNation(Nation nation) { this.nation = nation; }
+
+    // Backward-compat convenience aliases for older code paths.
+    public Resident getOwner() { return getMayor(); }
+    public void setOwner(Resident owner) { setMayor(owner); }
 }
