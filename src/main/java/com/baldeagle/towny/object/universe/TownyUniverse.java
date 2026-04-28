@@ -226,6 +226,48 @@ public final class TownyUniverse {
         return townBlock;
     }
 
+
+    public boolean unclaimTownBlock(Town town, WorldCoord worldCoord) {
+        if (town == null || worldCoord == null) {
+            return false;
+        }
+        TownBlock townBlock = townBlocksByWorldCoord.get(worldCoord);
+        if (townBlock == null || townBlock.getTown() != town) {
+            return false;
+        }
+
+        townBlocksByWorldCoord.remove(worldCoord);
+        town.removeTownBlock(worldCoord);
+        plotsByWorldCoord.remove(worldCoord);
+        return true;
+    }
+
+    public boolean removePlot(WorldCoord worldCoord) {
+        if (worldCoord == null) {
+            return false;
+        }
+        Plot plot = plotsByWorldCoord.remove(worldCoord);
+        if (plot == null) {
+            return false;
+        }
+        plotsById.remove(plot.getUUID());
+        return true;
+    }
+
+    public boolean addTownToNation(Town town, Nation nation) {
+        if (town == null || nation == null || town.hasNation()) {
+            return false;
+        }
+        return nation.addTown(town);
+    }
+
+    public boolean removeTownFromNation(Town town, Nation nation) {
+        if (town == null || nation == null) {
+            return false;
+        }
+        return nation.removeTown(town);
+    }
+
     public Optional<TownBlock> getTownBlock(WorldCoord worldCoord) {
         return Optional.ofNullable(townBlocksByWorldCoord.get(worldCoord));
     }

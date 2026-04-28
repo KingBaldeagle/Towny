@@ -39,6 +39,15 @@ This document outlines the high‑level steps required to re‑implement the Buk
 - Implement `/town`, `/nation`, `/plot`, `/resident` sub‑commands following the spec files in `dev-docs/specs/commands*.md`.
 - Hook commands into the new data model.
 
+### Phase 3 Progress Status (as of 2026-04-28)
+- ✅ Added a lightweight command framework (`CommandRegistry` + `SubCommand`) for modular subcommand wiring.
+- ✅ Registered NeoForge command families with aliases: `/town|/t`, `/resident|/res`, `/nation|/n`, `/plot claim`, and `/towny` status output.
+- ✅ Wired `/town new` to the in-memory `TownyUniverse` so player residents/towns are created through existing domain logic.
+- ✅ Added typed command-context helpers for resident lookup, player-townblock mapping, and plot/townblock lookups.
+- ✅ Implemented core Phase 3 command families and aliases: `/town|/t` (`new`,`list`,`here`,`add`,`kick`,`leave`,`claim`,`unclaim`), `/resident|/res` (`self`,`show`), `/nation|/n` (`new`,`list`,`add`,`kick`,`leave`), and `/plot` (`claim`,`unclaim`).
+- ✅ **Phase 3 command migration is complete for the currently scoped in-memory model implementation.**
+- 🚧 Next: finish parity polish from `commands_detailed.md` (advanced flags/options), add Towny permission-node resolver, and integrate persistence-backed command side effects.
+
 ### Command Boilerplate Reduction Strategy
 
 To reduce the 17k+ lines of command boilerplate, implement a custom command framework:
