@@ -40,6 +40,12 @@ A **Town** is a collection of plots owned by a single resident (the mayor) withi
 - **EconomyHandler**: `TownyEconomyHandler` for account operations.
 - **Event System**: fire `TownAddResidentEvent`, `TownRemoveResidentEvent`, `TownDeleteEvent`.
 
+## Implementation Status (as of 2026-04-28)
+- ✅ `Town` now lives at `com.baldeagle.towny.object.town.Town` and extends `Government`.
+- ✅ `Town` tracks a mayor and optional nation membership (`getMayor`, `hasNation`, `getNation`).
+- ✅ Resident add/remove operations synchronize resident-town linkage.
+- ✅ Legacy aliases `getOwner` / `setOwner` remain for backward compatibility while migrating code paths.
+
 ## Tests Required
 - Creation flow success and failure cases.
 - Resident invitation acceptance and denial.
