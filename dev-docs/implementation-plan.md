@@ -25,6 +25,15 @@ This document outlines the high‑level steps required to re‑implement the Buk
 - Implement data storage using Minecraft’s `LevelSavedData` (NBT) for towns, nations, residents.
 - Provide migration scripts from existing flat‑file format if needed.
 
+### Phase 2 Kickoff Status (as of 2026-04-28)
+- ✅ Added `TownyDataSource` abstraction for load/save operations.
+- ✅ Added `JsonTownyDataSource` bootstrap implementation writing to `config/towny/universe.json`.
+- ✅ JSON snapshot now covers Residents, Towns, Nations, Worlds, TownBlocks, and Plots.
+- ✅ Added directory-based JSON storage (`residents/`, `towns/`, `nations/`, `townblocks/`, `worlds/`, `plots/`).
+- ✅ Added persistence backend config selection (`json_snapshot` vs `directory_json`) via common config.
+- ✅ **Phase 2 is complete for the current JSON persistence track.**
+- 🚧 Optional future enhancement: move from JSON backends to `LevelSavedData` once command/event lifecycle is fully wired.
+
 ## 4. Command framework migration
 - Replace Bukkit command registration with NeoForge's `CommandDispatcher` (`net.minecraft.commands.Commands`).
 - Implement `/town`, `/nation`, `/plot`, `/resident` sub‑commands following the spec files in `dev-docs/specs/commands*.md`.

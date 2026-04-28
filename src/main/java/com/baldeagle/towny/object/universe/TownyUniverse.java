@@ -45,6 +45,28 @@ public final class TownyUniverse {
         return INSTANCE;
     }
 
+    public void clear() {
+        residentsById.clear();
+        residentsByName.clear();
+        townsById.clear();
+        townsByName.clear();
+        nationsById.clear();
+        nationsByName.clear();
+        townBlocksByWorldCoord.clear();
+        worldsByName.clear();
+        plotsById.clear();
+        plotsByWorldCoord.clear();
+    }
+
+    public Resident registerResident(Resident resident) {
+        if (resident == null) {
+            throw new IllegalArgumentException("resident must not be null");
+        }
+        residentsById.put(resident.getUUID(), resident);
+        residentsByName.put(normalize(resident.getName()), resident);
+        return resident;
+    }
+
     public Resident registerResident(UUID uuid, String name) {
         String normalized = normalize(name);
         Resident existingByName = residentsByName.get(normalized);
@@ -53,9 +75,7 @@ public final class TownyUniverse {
         }
 
         Resident resident = new Resident(uuid, name);
-        residentsById.put(resident.getUUID(), resident);
-        residentsByName.put(normalized, resident);
-        return resident;
+        return registerResident(resident);
     }
 
     public Optional<Resident> getResident(UUID uuid) {
@@ -100,8 +120,15 @@ public final class TownyUniverse {
         }
 
         Town town = new Town(UUID.randomUUID(), name, mayor);
+        return registerTown(town);
+    }
+
+    public Town registerTown(Town town) {
+        if (town == null) {
+            throw new IllegalArgumentException("town must not be null");
+        }
         townsById.put(town.getUUID(), town);
-        townsByName.put(normalized, town);
+        townsByName.put(normalize(town.getName()), town);
         return town;
     }
 
@@ -145,14 +172,29 @@ public final class TownyUniverse {
         }
 
         Nation nation = new Nation(UUID.randomUUID(), name, capitalTown);
+        return registerNation(nation);
+    }
+
+    public Nation registerNation(Nation nation) {
+        if (nation == null) {
+            throw new IllegalArgumentException("nation must not be null");
+        }
         nationsById.put(nation.getUUID(), nation);
-        nationsByName.put(normalized, nation);
+        nationsByName.put(normalize(nation.getName()), nation);
         return nation;
     }
 
     public TownyWorld registerWorld(String worldName) {
         String normalized = normalize(worldName);
         return worldsByName.computeIfAbsent(normalized, key -> new TownyWorld(UUID.randomUUID(), worldName));
+    }
+
+    public TownyWorld registerWorld(TownyWorld world) {
+        if (world == null) {
+            throw new IllegalArgumentException("world must not be null");
+        }
+        worldsByName.put(normalize(world.getName()), world);
+        return world;
     }
 
     public Optional<TownyWorld> getWorld(String worldName) {
@@ -192,6 +234,17 @@ public final class TownyUniverse {
         return Collections.unmodifiableCollection(townBlocksByWorldCoord.values());
     }
 
+    public TownBlock registerTownBlock(TownBlock townBlock) {
+        if (townBlock == null) {
+            throw new IllegalArgumentException("townBlock must not be null");
+        }
+        townBlocksByWorldCoord.put(townBlock.getWorldCoord(), townBlock);
+        if (townBlock.getTown() != null) {
+            townBlock.getTown().addTownBlock(townBlock);
+        }
+        return townBlock;
+    }
+
     public Plot createPlot(String name, WorldCoord worldCoord, Town town, Resident owner) {
         if (worldCoord == null || town == null) {
             throw new IllegalArgumentException("worldCoord/town must not be null");
@@ -219,6 +272,15 @@ public final class TownyUniverse {
 
     public Collection<Plot> getPlots() {
         return Collections.unmodifiableCollection(plotsById.values());
+    }
+
+    public Plot registerPlot(Plot plot) {
+        if (plot == null) {
+            throw new IllegalArgumentException("plot must not be null");
+        }
+        plotsById.put(plot.getUUID(), plot);
+        plotsByWorldCoord.put(plot.getWorldCoord(), plot);
+        return plot;
     }
 
     private String normalize(String name) {
