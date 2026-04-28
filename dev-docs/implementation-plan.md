@@ -15,9 +15,10 @@ This document outlines the high‑level steps required to re‑implement the Buk
 
 ### Current Status (as of 2026-04-28)
 - ✅ Resident/Town/Nation linkage skeleton is implemented.
-- ✅ Initial in-memory `TownyUniverse` registry added (resident/town/nation create + lookup flows).
+- ✅ Initial in-memory `TownyUniverse` registry added (resident/town/nation/plot create + lookup flows).
 - ✅ Added phase-1 value/object types for world/claim modeling (`Coord`, `WorldCoord`, `TownyWorld`, `TownBlock`, `TownBlockType`) and wired basic claim flow in `TownyUniverse`.
-- 🚧 Phase 1 persistence wiring is still pending (to be completed in Phase 2), along with command integration.
+- ✅ **Phase 1 core data model migration is complete** (Resident, Town, Nation, Plot, World/TownyUniverse in place).
+- 🚧 Persistence wiring is intentionally deferred to Phase 2, along with command integration.
 
 ## 3. Configuration & persistence
 - Convert `towny.yml` and other YAML configs to NeoForge‑compatible config (ForgeConfigSpec).

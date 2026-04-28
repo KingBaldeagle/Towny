@@ -1,6 +1,7 @@
 package com.baldeagle.towny.object.universe;
 
 import com.baldeagle.towny.object.nation.Nation;
+import com.baldeagle.towny.object.plot.Plot;
 import com.baldeagle.towny.object.resident.Resident;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.townblock.TownBlock;
@@ -35,6 +36,8 @@ public final class TownyUniverse {
 
     private final Map<WorldCoord, TownBlock> townBlocksByWorldCoord = new ConcurrentHashMap<>();
     private final Map<String, TownyWorld> worldsByName = new ConcurrentHashMap<>();
+    private final Map<UUID, Plot> plotsById = new ConcurrentHashMap<>();
+    private final Map<WorldCoord, Plot> plotsByWorldCoord = new ConcurrentHashMap<>();
 
     private TownyUniverse() {}
 
@@ -187,6 +190,35 @@ public final class TownyUniverse {
 
     public Collection<TownBlock> getTownBlocks() {
         return Collections.unmodifiableCollection(townBlocksByWorldCoord.values());
+    }
+
+    public Plot createPlot(String name, WorldCoord worldCoord, Town town, Resident owner) {
+        if (worldCoord == null || town == null) {
+            throw new IllegalArgumentException("worldCoord/town must not be null");
+        }
+        if (!townBlocksByWorldCoord.containsKey(worldCoord)) {
+            throw new IllegalStateException("Cannot create plot in unclaimed wilderness: " + worldCoord);
+        }
+        if (plotsByWorldCoord.containsKey(worldCoord)) {
+            throw new IllegalStateException("Plot already exists at: " + worldCoord);
+        }
+
+        Plot plot = new Plot(UUID.randomUUID(), name, worldCoord, town, owner);
+        plotsById.put(plot.getUUID(), plot);
+        plotsByWorldCoord.put(worldCoord, plot);
+        return plot;
+    }
+
+    public Optional<Plot> getPlot(UUID uuid) {
+        return Optional.ofNullable(plotsById.get(uuid));
+    }
+
+    public Optional<Plot> getPlot(WorldCoord worldCoord) {
+        return Optional.ofNullable(plotsByWorldCoord.get(worldCoord));
+    }
+
+    public Collection<Plot> getPlots() {
+        return Collections.unmodifiableCollection(plotsById.values());
     }
 
     private String normalize(String name) {
