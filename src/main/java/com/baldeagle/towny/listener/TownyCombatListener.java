@@ -29,6 +29,10 @@ public final class TownyCombatListener {
             return;
         }
 
+        if (TownyProtectionService.isPvpAllowedAt(victim.level(), victim.blockPosition())) {
+            return;
+        }
+
         TownyUniverse universe = TownyUniverse.getInstance();
         Optional<TownBlock> townBlockOptional = universe.getTownBlock(
             TownyProtectionService.toWorldCoord(victim.level(), victim.blockPosition())
@@ -38,7 +42,8 @@ public final class TownyCombatListener {
         }
 
         Resident attackerResident = universe.registerResident(attacker.getUUID(), attacker.getName().getString());
-        if (attackerResident.getTown() == townBlockOptional.get().getTown()) {
+        Resident victimResident = universe.registerResident(victim.getUUID(), victim.getName().getString());
+        if (attackerResident.getTown() != null && attackerResident.getTown() == victimResident.getTown()) {
             return;
         }
 
