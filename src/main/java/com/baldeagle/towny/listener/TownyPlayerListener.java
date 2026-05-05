@@ -34,6 +34,19 @@ public final class TownyPlayerListener {
         }
     }
 
+
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+
+        boolean protectedArea = !TownyProtectionService.isPvpAllowedAt(player.level(), player.blockPosition());
+        if (protectedArea) {
+            player.sendSystemMessage(Component.literal("Towny: Entered a protected town area."));
+        }
+    }
+
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
