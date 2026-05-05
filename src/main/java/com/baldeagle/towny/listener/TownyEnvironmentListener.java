@@ -3,7 +3,6 @@ package com.baldeagle.towny.listener;
 import com.baldeagle.towny.Towny;
 import com.baldeagle.towny.service.TownyProtectionService;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -24,7 +23,7 @@ public final class TownyEnvironmentListener {
     @SubscribeEvent
     public static void onFarmlandTrample(BlockEvent.FarmlandTrampleEvent event) {
         BlockPos pos = event.getPos();
-        if (event.getLevel() instanceof Level level && !TownyProtectionService.isMobGriefAllowedAt(level, pos)) {
+        if (!TownyProtectionService.isMobGriefAllowedAt(event.getLevel(), pos)) {
             event.setCanceled(true);
         }
     }
@@ -35,7 +34,7 @@ public final class TownyEnvironmentListener {
             return;
         }
 
-        if (event.getLevel() instanceof Level level && !TownyProtectionService.isFireAllowedAt(level, event.getPos())) {
+        if (!TownyProtectionService.isFireAllowedAt(event.getLevel(), event.getPos())) {
             event.setCanceled(true);
         }
     }
