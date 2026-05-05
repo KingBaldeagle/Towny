@@ -222,6 +222,14 @@ dispatcher.register(literal("town")
 - Migrate essential listeners: player login/logout, block break/place, entity damage, teleport, tick updates.
 - Ensure events fire before/after core actions to allow other mods to intercept.
 
+### Phase 4 Status (as of 2026-05-05)
+- ✅ Added block protection listener coverage for break/place/right-click checks in claimed town blocks.
+- ✅ Added combat listener coverage for player-vs-player protection in claimed areas with same-town bypass.
+- ✅ Added environment listener coverage for explosion block filtering, farmland trample protection, and fire-neighbor notification cancellation in protected areas.
+- ✅ Added player lifecycle listener coverage for resident online/offline sync plus basic respawn feedback in protected territory.
+- ✅ Centralized listener policy decisions in `TownyProtectionService` (`isTownyEnabled`, `canBuildAt`, `isPvpAllowedAt`, `isExplosionAllowedAt`, `isFireAllowedAt`, `isMobGriefAllowedAt`).
+- 🚧 Remaining parity work: fine-grained Town/Nation/Plot permission matrices, richer world toggles, and persistence-backed side effects for listener actions.
+
 ## 6. Economy integration (Lightmans Currency)
 1. Define `EconomyProvider` interface (done).
 2. Implement `LightmansCurrencyProvider` with proper API calls (TODO – replace fallback map with real wallet handling).
