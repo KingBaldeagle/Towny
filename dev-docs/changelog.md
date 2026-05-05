@@ -24,3 +24,4 @@
 - Expanded phase-2 JSON snapshot persistence to include worlds, town blocks, and plots.
 - Replaced placeholder config values with Towny-focused common config options for economy/pricing/persistence settings.
 - Marked Phase 2 complete for the current JSON persistence implementation track.
+- 2026-05-05: Re-pushed Phase 4 CI signature fix commit for branch visibility (no functional behavior change).
