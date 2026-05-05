@@ -21,9 +21,7 @@ public final class TownyBlockProtectionListener {
         if (!(event.getPlayer() instanceof ServerPlayer player)) {
             return;
         }
-        if (!TownyProtectionService.isTownyEnabled(player.level(), event.getPos())) {
-            return;
-        }
+
         if (!TownyProtectionService.canBuildAt(player, event.getPos())) {
             event.setCanceled(true);
             player.sendSystemMessage(Component.literal("You cannot break blocks in this town block."));
