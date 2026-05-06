@@ -34,6 +34,9 @@ import com.baldeagle.towny.object.economy.TownyEconomyHandler;
 import com.baldeagle.towny.object.economy.TownyEconomyService;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.universe.TownyUniverse;
+import com.baldeagle.towny.service.TownyWarService;
+import com.baldeagle.towny.service.TownyPlaceholderService;
+import com.baldeagle.towny.service.TownyChatService;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
@@ -225,6 +228,37 @@ public final class TownyCommands {
             .then(Commands.literal("unclaim")
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
                 .executes(context -> REGISTRY.execute("plot", "unclaim", context))));
+
+
+        dispatcher.register(Commands.literal("tc")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("message", StringArgumentType.greedyString())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); TownyChatService.send(TownyChatService.Channel.TOWN, p, r, StringArgumentType.getString(context, "message")); return 1; })));
+        dispatcher.register(Commands.literal("nc")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("message", StringArgumentType.greedyString())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); TownyChatService.send(TownyChatService.Channel.NATION, p, r, StringArgumentType.getString(context, "message")); return 1; })));
+        dispatcher.register(Commands.literal("lc")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("message", StringArgumentType.greedyString())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); TownyChatService.send(TownyChatService.Channel.LOCAL, p, r, StringArgumentType.getString(context, "message")); return 1; })));
+        dispatcher.register(Commands.literal("townywar")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.literal("status").executes(context -> { context.getSource().sendSuccess(() -> Component.literal("Active wars=" + TownyWarService.activeWarCount()), false); return 1; }))
+            .then(Commands.literal("declare").then(Commands.argument("nation", StringArgumentType.word()).executes(context -> {
+                var p = context.getSource().getPlayer();
+                var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString());
+                if (!r.hasTown() || !r.getTown().hasNation()) return 0;
+                var n = TownyUniverse.getInstance().getNation(StringArgumentType.getString(context, "nation"));
+                if (n.isEmpty()) return 0;
+                boolean ok = TownyWarService.declareWar(r.getTown().getNation(), n.get());
+                context.getSource().sendSuccess(() -> Component.literal(ok ? "War declared." : "War already active."), false);
+                return ok ? 1 : 0;
+            }))));
+        dispatcher.register(Commands.literal("townypapi")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("placeholder", StringArgumentType.word())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); String key = StringArgumentType.getString(context, "placeholder"); context.getSource().sendSuccess(() -> Component.literal(key + "=" + TownyPlaceholderService.resolve(r, key)), false); return 1; })));
 
         dispatcher.register(Commands.literal("towny")
             .requires(source -> source.hasPermission(0))
