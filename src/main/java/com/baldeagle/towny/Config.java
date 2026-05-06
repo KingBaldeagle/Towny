@@ -33,5 +33,17 @@ public class Config {
         .comment("Relative data directory for Towny persistence.")
         .define("dataDirectory", "config/towny");
 
+    public static final ModConfigSpec.ConfigValue<String> ECONOMY_PROVIDER = BUILDER
+        .comment("Economy provider: lightmans_currency or closed.")
+        .define("economyProvider", "lightmans_currency");
+
+    public static final ModConfigSpec.IntValue TAX_COLLECTION_INTERVAL_TICKS = BUILDER
+        .comment("How often to run Towny tax collection tick tasks.")
+        .defineInRange("taxCollectionIntervalTicks", 24_000, 20, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue NATION_TAX_PERCENT = BUILDER
+        .comment("Nation tax percentage collected from each member town balance per cycle.")
+        .defineInRange("nationTaxPercent", 3, 0, 100);
+
     static final ModConfigSpec SPEC = BUILDER.build();
 }

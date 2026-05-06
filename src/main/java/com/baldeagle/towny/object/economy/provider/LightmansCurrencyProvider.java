@@ -1,8 +1,17 @@
 package com.baldeagle.towny.object.economy.provider;
 
+import io.github.lightman314.lightmanscurrency.api.money.MoneyAPI;
+import io.github.lightman314.lightmanscurrency.api.money.value.MoneyValue;
+import io.github.lightman314.lightmanscurrency.api.money.value.MoneyView;
+import io.github.lightman314.lightmanscurrency.api.money.value.holder.IMoneyHolder;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
+
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,7 +46,15 @@ public class LightmansCurrencyProvider implements EconomyProvider {
 
     @Override
     public long getBalance(String accountId) {
-        return balancesInCopper.getOrDefault(normalize(accountId), 0L);
+        String normalized = normalize(accountId);
+        if (normalized.startsWith("player:")) {
+            ServerPlayer player = resolvePlayer(normalized);
+            if (player != null) {
+                IMoneyHolder holder = MoneyAPI.getApi().GetPlayersMoneyHandler(player);
+                return totalCoreValue(holder.getStoredMoney());
+            }
+        }
+        return balancesInCopper.getOrDefault(normalized, 0L);
     }
 
     @Override
@@ -46,6 +63,19 @@ public class LightmansCurrencyProvider implements EconomyProvider {
             return false;
         }
         String normalized = normalize(accountId);
+        if (normalized.startsWith("player:")) {
+            ServerPlayer player = resolvePlayer(normalized);
+            if (player != null) {
+                IMoneyHolder holder = MoneyAPI.getApi().GetPlayersMoneyHandler(player);
+                MoneyValue template = templateValue(holder.getStoredMoney());
+                if (template == null) {
+                    return false;
+                }
+                MoneyValue requested = template.fromCoreValue(copperAmount);
+                MoneyValue remainder = holder.extractMoney(requested, false);
+                return remainder == null || remainder.isEmpty();
+            }
+        }
         synchronized (balancesInCopper) {
             long current = balancesInCopper.getOrDefault(normalized, 0L);
             if (current < copperAmount) {
@@ -62,6 +92,17 @@ public class LightmansCurrencyProvider implements EconomyProvider {
             throw new IllegalArgumentException("copperAmount must be >= 0");
         }
         String normalized = normalize(accountId);
+        if (normalized.startsWith("player:")) {
+            ServerPlayer player = resolvePlayer(normalized);
+            if (player != null) {
+                IMoneyHolder holder = MoneyAPI.getApi().GetPlayersMoneyHandler(player);
+                MoneyValue template = templateValue(holder.getStoredMoney());
+                if (template != null) {
+                    holder.insertMoney(template.fromCoreValue(copperAmount), false);
+                    return;
+                }
+            }
+        }
         balancesInCopper.merge(normalized, copperAmount, Long::sum);
     }
 
@@ -110,5 +151,34 @@ public class LightmansCurrencyProvider implements EconomyProvider {
             throw new IllegalArgumentException("accountId must not be blank");
         }
         return accountId.trim().toLowerCase();
+    }
+
+    private ServerPlayer resolvePlayer(String normalizedAccountId) {
+        try {
+            UUID uuid = UUID.fromString(normalizedAccountId.substring("player:".length()));
+            if (ServerLifecycleHooks.getCurrentServer() == null) {
+                return null;
+            }
+            return ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(uuid);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+    }
+
+    private long totalCoreValue(MoneyView view) {
+        long total = 0L;
+        List<MoneyValue> values = view.allValues();
+        for (MoneyValue value : values) {
+            total += value.getCoreValue();
+        }
+        return total;
+    }
+
+    private MoneyValue templateValue(MoneyView view) {
+        List<MoneyValue> values = view.allValues();
+        if (!values.isEmpty()) {
+            return values.getFirst();
+        }
+        return view.getRandomValue();
     }
 }

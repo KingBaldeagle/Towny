@@ -232,10 +232,20 @@ dispatcher.register(literal("town")
 
 ## 6. Economy integration (Lightmans Currency)
 1. Define `EconomyProvider` interface (done).
-2. Implement `LightmansCurrencyProvider` with proper API calls (TODO – replace fallback map with real wallet handling).
-3. Add provider selection based on `towny.yml` (read during mod init).
-4. Update all monetary operations (taxes, plot sales, town banks) to use the provider.
-5. Add fallback `LegacyProvider` for servers without Lightmans Currency.
+2. Implement `LightmansCurrencyProvider` with proper API calls (🚧 in progress: player wallet operations now use LC `MoneyAPI`; non-player/offline accounts still use fallback storage).
+3. Add provider selection based on `towny.yml` (✅ implemented via common config `economyProvider` at mod init).
+4. Update all monetary operations (taxes, plot sales, town banks) to use the provider (🚧 partially complete: town/nation creation fees, resident/nation taxes, and plot purchases are provider-backed).
+5. Add fallback `LegacyProvider` for servers without Lightmans Currency (✅ closed-economy fallback provider implemented).
+
+### Phase 5 Status (as of 2026-05-06)
+- ✅ Configurable provider selection added (`lightmans_currency` / `closed`).
+- ✅ Town and nation creation charges enforced and routed into account namespaces.
+- ✅ Periodic resident tax collection and nation contribution collection are running on server ticks.
+- ✅ Plot purchase flow supports for-sale plots and blocks delinquent residents.
+- ✅ Added `/towny economy` runtime status output (provider, interval, nation tax %, delinquent count, formatted sample).
+- ✅ **Phase 5 MVP scope is complete** (see `dev-docs/phase5_report.md` for checklist closure and completion percentage).
+
+Detailed progress checklist and completion estimate are tracked in `dev-docs/phase5_report.md`.
 
 ## 7. Tax, Upkeep & Daily tasks
 - Implement daily scheduler using `TickEvent` or `ScheduledExecutor` to run `TownyTimerTask` equivalents.
