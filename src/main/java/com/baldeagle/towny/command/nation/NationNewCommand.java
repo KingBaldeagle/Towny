@@ -4,6 +4,7 @@ import com.baldeagle.towny.Config;
 import com.baldeagle.towny.command.framework.SubCommand;
 import com.baldeagle.towny.command.framework.TownyCommandContext;
 import com.baldeagle.towny.object.economy.TownyEconomyHandler;
+import com.baldeagle.towny.object.economy.provider.LightmansCurrencyProvider;
 import com.baldeagle.towny.object.nation.Nation;
 import com.baldeagle.towny.object.resident.Resident;
 import com.baldeagle.towny.object.town.Town;
@@ -56,6 +57,10 @@ public final class NationNewCommand implements SubCommand {
         }
 
         String nationAccountId = TownyEconomyHandler.accountIdForNation(nation.getUUID());
+        if (context.getPlayerOrNull() instanceof net.minecraft.server.level.ServerPlayer player
+            && TownyEconomyHandler.provider() instanceof LightmansCurrencyProvider lcProvider) {
+            lcProvider.ensureTeamAccount(nationAccountId, player, "nation_" + nation.getName());
+        }
         TownyEconomyHandler.provider().deposit(nationAccountId, nationCreationCost);
 
         return context.success(

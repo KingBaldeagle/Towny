@@ -4,6 +4,9 @@ import io.github.lightman314.lightmanscurrency.api.money.MoneyAPI;
 import io.github.lightman314.lightmanscurrency.api.money.value.MoneyValue;
 import io.github.lightman314.lightmanscurrency.api.money.value.MoneyView;
 import io.github.lightman314.lightmanscurrency.api.money.value.holder.IMoneyHolder;
+import io.github.lightman314.lightmanscurrency.api.teams.ITeam;
+import io.github.lightman314.lightmanscurrency.api.teams.TeamAPI;
+import io.github.lightman314.lightmanscurrency.common.teams.Team;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
@@ -23,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LightmansCurrencyProvider implements EconomyProvider {
     private final Map<String, Long> balancesInCopper = new ConcurrentHashMap<>();
+    private final Map<String, Long> teamIdsByAccount = new ConcurrentHashMap<>();
 
     public enum Denomination {
         NETHERITE("netherite", 100_000L),
@@ -54,6 +58,12 @@ public class LightmansCurrencyProvider implements EconomyProvider {
                 return totalCoreValue(holder.getStoredMoney());
             }
         }
+        if (isGovernmentAccount(normalized)) {
+            ITeam team = getTeamForAccount(normalized);
+            if (team != null && team.hasBankAccount()) {
+                return totalCoreValue(team.getBankAccount().getStoredMoney());
+            }
+        }
         return balancesInCopper.getOrDefault(normalized, 0L);
     }
 
@@ -73,6 +83,17 @@ public class LightmansCurrencyProvider implements EconomyProvider {
                 }
                 MoneyValue requested = template.fromCoreValue(copperAmount);
                 MoneyValue remainder = holder.extractMoney(requested, false);
+                return remainder == null || remainder.isEmpty();
+            }
+        }
+        if (isGovernmentAccount(normalized)) {
+            ITeam team = getTeamForAccount(normalized);
+            if (team != null && team.hasBankAccount()) {
+                MoneyValue template = templateValue(team.getBankAccount().getStoredMoney());
+                if (template == null) {
+                    return false;
+                }
+                MoneyValue remainder = team.getBankAccount().withdrawMoney(template.fromCoreValue(copperAmount));
                 return remainder == null || remainder.isEmpty();
             }
         }
@@ -99,6 +120,16 @@ public class LightmansCurrencyProvider implements EconomyProvider {
                 MoneyValue template = templateValue(holder.getStoredMoney());
                 if (template != null) {
                     holder.insertMoney(template.fromCoreValue(copperAmount), false);
+                    return;
+                }
+            }
+        }
+        if (isGovernmentAccount(normalized)) {
+            ITeam team = getTeamForAccount(normalized);
+            if (team != null && team.hasBankAccount()) {
+                MoneyValue template = templateValue(team.getBankAccount().getStoredMoney());
+                if (template != null) {
+                    team.getBankAccount().depositMoney(template.fromCoreValue(copperAmount));
                     return;
                 }
             }
@@ -163,6 +194,36 @@ public class LightmansCurrencyProvider implements EconomyProvider {
         } catch (IllegalArgumentException ignored) {
             return null;
         }
+    }
+
+    public void ensureTeamAccount(String accountId, ServerPlayer owner, String teamName) {
+        String normalized = normalize(accountId);
+        if (!isGovernmentAccount(normalized) || owner == null) {
+            return;
+        }
+
+        teamIdsByAccount.computeIfAbsent(normalized, ignored -> {
+            ITeam created = TeamAPI.getApi().CreateTeam(owner, teamName);
+            if (created == null) {
+                return -1L;
+            }
+            if (!created.hasBankAccount() && created instanceof Team concreteTeam) {
+                concreteTeam.createBankAccount(owner);
+            }
+            return created.getID();
+        });
+    }
+
+    private boolean isGovernmentAccount(String normalizedAccountId) {
+        return normalizedAccountId.startsWith("town:") || normalizedAccountId.startsWith("nation:");
+    }
+
+    private ITeam getTeamForAccount(String normalizedAccountId) {
+        Long teamId = teamIdsByAccount.get(normalizedAccountId);
+        if (teamId == null || teamId < 0) {
+            return null;
+        }
+        return TeamAPI.getApi().GetTeam(false, teamId);
     }
 
     private long totalCoreValue(MoneyView view) {
