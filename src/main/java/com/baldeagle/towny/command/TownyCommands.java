@@ -14,11 +14,19 @@ import com.baldeagle.towny.command.resident.ResidentShowCommand;
 import com.baldeagle.towny.command.town.TownAddCommand;
 import com.baldeagle.towny.command.town.TownClaimCommand;
 import com.baldeagle.towny.command.town.TownHereCommand;
+import com.baldeagle.towny.command.town.TownInviteCommand;
 import com.baldeagle.towny.command.town.TownKickCommand;
 import com.baldeagle.towny.command.town.TownLeaveCommand;
 import com.baldeagle.towny.command.town.TownListCommand;
 import com.baldeagle.towny.command.town.TownNewCommand;
+import com.baldeagle.towny.command.town.TownAcceptCommand;
+import com.baldeagle.towny.command.town.TownDenyCommand;
+import com.baldeagle.towny.command.town.TownDeleteCommand;
 import com.baldeagle.towny.command.town.TownUnclaimCommand;
+import com.baldeagle.towny.command.town.TownRankCommand;
+import com.baldeagle.towny.command.town.TownSetCommand;
+import com.baldeagle.towny.command.town.TownNationJoinCommand;
+import com.baldeagle.towny.command.town.TownNationLeaveCommand;
 import com.baldeagle.towny.object.resident.Resident;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.universe.TownyUniverse;
@@ -46,6 +54,14 @@ public final class TownyCommands {
         REGISTRY.register("town", new TownListCommand());
         REGISTRY.register("town", new TownHereCommand());
         REGISTRY.register("town", new TownAddCommand());
+        REGISTRY.register("town", new TownInviteCommand());
+        REGISTRY.register("town", new TownAcceptCommand());
+        REGISTRY.register("town", new TownDenyCommand());
+        REGISTRY.register("town", new TownDeleteCommand());
+        REGISTRY.register("town", new TownRankCommand());
+        REGISTRY.register("town", new TownSetCommand());
+        REGISTRY.register("town", new TownNationJoinCommand());
+        REGISTRY.register("town", new TownNationLeaveCommand());
         REGISTRY.register("town", new TownKickCommand());
         REGISTRY.register("town", new TownLeaveCommand());
         REGISTRY.register("town", new TownClaimCommand());
@@ -87,6 +103,48 @@ public final class TownyCommands {
                         builder
                     ))
                     .executes(context -> REGISTRY.execute("town", "add", context))))
+            .then(Commands.literal("invite")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .then(Commands.argument("name", StringArgumentType.word())
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                        TownyUniverse.getInstance().getResidents().stream().map(Resident::getName),
+                        builder
+                    ))
+                    .executes(context -> REGISTRY.execute("town", "invite", context))))
+            .then(Commands.literal("accept")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .executes(context -> REGISTRY.execute("town", "accept", context)))
+            .then(Commands.literal("deny")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .executes(context -> REGISTRY.execute("town", "deny", context)))
+            .then(Commands.literal("rank")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .then(Commands.argument("name", StringArgumentType.word())
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                        TownyUniverse.getInstance().getResidents().stream().map(Resident::getName),
+                        builder
+                    ))
+                    .then(Commands.argument("rank", StringArgumentType.word())
+                        .executes(context -> REGISTRY.execute("town", "rank", context)))))
+            .then(Commands.literal("set")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .then(Commands.argument("key", StringArgumentType.word())
+                    .then(Commands.argument("value", StringArgumentType.greedyString())
+                        .executes(context -> REGISTRY.execute("town", "set", context)))))
+            .then(Commands.literal("delete")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .executes(context -> REGISTRY.execute("town", "delete", context)))
+            .then(Commands.literal("nation")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .then(Commands.literal("join")
+                    .then(Commands.argument("nation", StringArgumentType.word())
+                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                            TownyUniverse.getInstance().getNations().stream().map(com.baldeagle.towny.object.nation.Nation::getName),
+                            builder
+                        ))
+                        .executes(context -> REGISTRY.execute("town", "nation_join", context))))
+                .then(Commands.literal("leave")
+                    .executes(context -> REGISTRY.execute("town", "nation_leave", context))))
             .then(Commands.literal("kick")
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
                 .then(Commands.argument("name", StringArgumentType.word())
