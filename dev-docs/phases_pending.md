@@ -65,6 +65,13 @@ Status legend:
   - [x] `/town set ...`
   - [x] `/town delete`
   - [x] Nation join/leave flows via town commands
+  - [ ] `/town invite <player>`
+  - [ ] `/town accept`
+  - [ ] `/town deny` (optional but expected)
+  - [ ] `/town rank ...`
+  - [ ] `/town set ...`
+  - [ ] `/town delete`
+  - [ ] Nation join/leave flows via town commands
 - [ ] **Resident admin and jail flows**
   - [ ] Permission-override resident commands
   - [ ] Jail/unjail commands
