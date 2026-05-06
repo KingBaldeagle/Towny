@@ -38,6 +38,7 @@ import com.baldeagle.towny.service.TownyWarService;
 import com.baldeagle.towny.service.TownyPlaceholderService;
 import com.baldeagle.towny.service.TownyChatService;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -46,6 +47,8 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Phase-3 command entry point.
@@ -284,4 +287,64 @@ public final class TownyCommands {
                     return 1;
                 })));
     }
+
+    private static int executeJail(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context, boolean withFine) {
+        String playerName = StringArgumentType.getString(context, "player");
+        String durationInput = StringArgumentType.getString(context, "duration");
+        long durationMillis = parseDurationMillis(durationInput);
+        if (durationMillis <= 0L) {
+            context.getSource().sendFailure(Component.literal("Invalid duration. Use formats like 10m, 2h, 1d."));
+            return 0;
+        }
+        var targetOpt = TownyUniverse.getInstance().getResident(playerName);
+        if (targetOpt.isEmpty()) {
+            context.getSource().sendFailure(Component.literal("Resident not found: " + playerName));
+            return 0;
+        }
+        var target = targetOpt.get();
+        if (target.isJailed()) {
+            context.getSource().sendFailure(Component.literal("Resident is already jailed."));
+            return 0;
+        }
+        if (withFine) {
+            int fine = IntegerArgumentType.getInteger(context, "fine");
+            if (fine > 0) {
+                String targetAccount = TownyEconomyHandler.accountIdForPlayer(target.getUUID());
+                if (!TownyEconomyHandler.provider().withdraw(targetAccount, fine)) {
+                    context.getSource().sendFailure(Component.literal("Resident cannot pay fine of " + fine + " copper."));
+                    return 0;
+                }
+            }
+        }
+        target.jailForMillis(durationMillis);
+        context.getSource().sendSuccess(() -> Component.literal("Jailed " + target.getName() + " for " + durationInput + "."), false);
+        return 1;
+    }
+
+    private static long parseDurationMillis(String input) {
+        if (input == null || input.isBlank()) {
+            return -1L;
+        }
+        String value = input.trim().toLowerCase();
+        if (value.length() < 2) {
+            return -1L;
+        }
+        char unit = value.charAt(value.length() - 1);
+        long amount;
+        try {
+            amount = Long.parseLong(value.substring(0, value.length() - 1));
+        } catch (NumberFormatException ignored) {
+            return -1L;
+        }
+        if (amount <= 0L) {
+            return -1L;
+        }
+        return switch (unit) {
+            case 'm' -> TimeUnit.MINUTES.toMillis(amount);
+            case 'h' -> TimeUnit.HOURS.toMillis(amount);
+            case 'd' -> TimeUnit.DAYS.toMillis(amount);
+            default -> -1L;
+        };
+    }
+
 }
