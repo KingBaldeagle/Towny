@@ -25,3 +25,19 @@
 - Replaced placeholder config values with Towny-focused common config options for economy/pricing/persistence settings.
 - Marked Phase 2 complete for the current JSON persistence implementation track.
 - 2026-05-05: Re-pushed Phase 4 CI signature fix commit for branch visibility (no functional behavior change).
+
+## 2026-05-06
+
+### Added
+- Added phase-5 `TownyEconomyService` flows for resident taxes, nation contributions, plot purchase handling, and delinquency tracking.
+- Added phase-5 `TownyEconomyTickListener` to run recurring resident/nation tax collection cycles.
+- Added `/towny economy` command output for runtime economy status diagnostics.
+
+### Changed
+- Expanded economy config with provider and tax scheduling fields (`economyProvider`, `taxCollectionIntervalTicks`, `nationTaxPercent`).
+- Updated `/town new` and `/nation new` to enforce creation cost charging with rollback and destination account deposit.
+- Updated `/plot claim` to support buying for-sale plots and reject delinquent residents.
+- Improved `LightmansCurrencyProvider` player integration to use LC wallet handlers and aggregate wallet values for balance reads.
+- Persisted resident delinquency state through both JSON persistence backends (`JsonTownyDataSource` and `DirectoryJsonTownyDataSource`).
+- Added `TownyTransactionRecord` audit entries for resident tax, nation tax, and plot purchase economy flows, plus diagnostics count visibility in `/towny economy`.
+- Marked Phase 5 MVP scope complete with checklist closure in `dev-docs/phase5_report.md`.
