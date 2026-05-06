@@ -26,6 +26,7 @@ import com.baldeagle.towny.command.town.TownDeleteCommand;
 import com.baldeagle.towny.command.town.TownUnclaimCommand;
 import com.baldeagle.towny.command.town.TownRankCommand;
 import com.baldeagle.towny.command.town.TownSetCommand;
+import com.baldeagle.towny.command.town.TownSpawnCommand;
 import com.baldeagle.towny.command.town.TownNationJoinCommand;
 import com.baldeagle.towny.command.town.TownNationLeaveCommand;
 import com.baldeagle.towny.object.resident.Resident;
@@ -63,6 +64,7 @@ public final class TownyCommands {
         REGISTRY.register("town", new TownDeleteCommand());
         REGISTRY.register("town", new TownRankCommand());
         REGISTRY.register("town", new TownSetCommand());
+        REGISTRY.register("town", new TownSpawnCommand());
         REGISTRY.register("town", new TownNationJoinCommand());
         REGISTRY.register("town", new TownNationLeaveCommand());
         REGISTRY.register("town", new TownKickCommand());
@@ -134,6 +136,9 @@ public final class TownyCommands {
                 .then(Commands.argument("key", StringArgumentType.word())
                     .then(Commands.argument("value", StringArgumentType.greedyString())
                         .executes(context -> REGISTRY.execute("town", "set", context)))))
+            .then(Commands.literal("spawn")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .executes(context -> REGISTRY.execute("town", "spawn", context)))
             .then(Commands.literal("delete")
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
                 .executes(context -> REGISTRY.execute("town", "delete", context)))

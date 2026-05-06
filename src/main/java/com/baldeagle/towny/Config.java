@@ -45,5 +45,21 @@ public class Config {
         .comment("Nation tax percentage collected from each member town balance per cycle.")
         .defineInRange("nationTaxPercent", 3, 0, 100);
 
+    public static final ModConfigSpec.IntValue TP_WARMUP_SECONDS = BUILDER
+        .comment("Teleport warmup duration in seconds.")
+        .defineInRange("tpWarmupSeconds", 5, 0, 300);
+
+    public static final ModConfigSpec.BooleanValue TP_CANCEL_ON_MOVE = BUILDER
+        .comment("Cancel warmup teleport when the player moves.")
+        .define("tpCancelOnMove", true);
+
+    public static final ModConfigSpec.BooleanValue TP_CANCEL_ON_DAMAGE = BUILDER
+        .comment("Cancel warmup teleport when the player is damaged.")
+        .define("tpCancelOnDamage", true);
+
+    public static final ModConfigSpec.IntValue TP_COOLDOWN_SECONDS = BUILDER
+        .comment("Teleport cooldown after successful teleport in seconds.")
+        .defineInRange("tpCooldownSeconds", 30, 0, 3600);
+
     static final ModConfigSpec SPEC = BUILDER.build();
 }
