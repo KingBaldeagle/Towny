@@ -34,6 +34,9 @@ import com.baldeagle.towny.object.economy.TownyEconomyHandler;
 import com.baldeagle.towny.object.economy.TownyEconomyService;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.universe.TownyUniverse;
+import com.baldeagle.towny.service.TownyWarService;
+import com.baldeagle.towny.service.TownyPlaceholderService;
+import com.baldeagle.towny.service.TownyChatService;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -229,64 +232,36 @@ public final class TownyCommands {
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
                 .executes(context -> REGISTRY.execute("plot", "unclaim", context))));
 
-        dispatcher.register(Commands.literal("jail")
-            .requires(source -> source.hasPermission(2))
-            .then(Commands.literal("setlocation")
-                .requires(source -> source.getPlayer() != null)
-                .executes(context -> {
-                    var player = context.getSource().getPlayer();
-                    var resident = TownyUniverse.getInstance().registerResident(player.getUUID(), player.getName().getString());
-                    if (!resident.hasTown() || !resident.isMayor()) {
-                        context.getSource().sendFailure(Component.literal("Only a mayor can set the town jail location."));
-                        return 0;
-                    }
-                    resident.getTown().setJailBlock(com.baldeagle.towny.service.TownyProtectionService.toWorldCoord(player.level(), player.blockPosition()));
-                    context.getSource().sendSuccess(() -> Component.literal("Town jail location set."), false);
-                    return 1;
-                }))
-            .then(Commands.argument("player", StringArgumentType.word())
-                .then(Commands.argument("duration", StringArgumentType.word())
-                    .executes(context -> executeJail(context, false))
-                    .then(Commands.argument("fine", IntegerArgumentType.integer(0))
-                        .executes(context -> executeJail(context, true)))))
-            .then(Commands.literal("info")
-                .then(Commands.argument("player", StringArgumentType.word())
-                    .executes(context -> {
-                        String playerName = StringArgumentType.getString(context, "player");
-                        var targetOpt = TownyUniverse.getInstance().getResident(playerName);
-                        if (targetOpt.isEmpty()) {
-                            context.getSource().sendFailure(Component.literal("Resident not found: " + playerName));
-                            return 0;
-                        }
-                        var target = targetOpt.get();
-                        if (!target.isJailed()) {
-                            context.getSource().sendSuccess(() -> Component.literal(target.getName() + " is not jailed."), false);
-                            return 1;
-                        }
-                        long remaining = Math.max(0L, target.getJailedUntilEpochMillis() - System.currentTimeMillis());
-                        context.getSource().sendSuccess(() -> Component.literal(target.getName() + " jail remaining: " + (remaining / 1000L) + "s"), false);
-                        return 1;
-                    }))));
 
-        dispatcher.register(Commands.literal("unjail")
-            .requires(source -> source.hasPermission(2))
-            .then(Commands.argument("player", StringArgumentType.word())
-                .executes(context -> {
-                    String playerName = StringArgumentType.getString(context, "player");
-                    var targetOpt = TownyUniverse.getInstance().getResident(playerName);
-                    if (targetOpt.isEmpty()) {
-                        context.getSource().sendFailure(Component.literal("Resident not found: " + playerName));
-                        return 0;
-                    }
-                    var target = targetOpt.get();
-                    if (!target.isJailed() && target.getJailedUntilEpochMillis() == 0L) {
-                        context.getSource().sendFailure(Component.literal("Resident is not jailed."));
-                        return 0;
-                    }
-                    target.unjail();
-                    context.getSource().sendSuccess(() -> Component.literal("Released " + target.getName() + " from jail."), false);
-                    return 1;
-                })));
+        dispatcher.register(Commands.literal("tc")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("message", StringArgumentType.greedyString())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); TownyChatService.send(TownyChatService.Channel.TOWN, p, r, StringArgumentType.getString(context, "message")); return 1; })));
+        dispatcher.register(Commands.literal("nc")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("message", StringArgumentType.greedyString())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); TownyChatService.send(TownyChatService.Channel.NATION, p, r, StringArgumentType.getString(context, "message")); return 1; })));
+        dispatcher.register(Commands.literal("lc")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("message", StringArgumentType.greedyString())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); TownyChatService.send(TownyChatService.Channel.LOCAL, p, r, StringArgumentType.getString(context, "message")); return 1; })));
+        dispatcher.register(Commands.literal("townywar")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.literal("status").executes(context -> { context.getSource().sendSuccess(() -> Component.literal("Active wars=" + TownyWarService.activeWarCount()), false); return 1; }))
+            .then(Commands.literal("declare").then(Commands.argument("nation", StringArgumentType.word()).executes(context -> {
+                var p = context.getSource().getPlayer();
+                var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString());
+                if (!r.hasTown() || !r.getTown().hasNation()) return 0;
+                var n = TownyUniverse.getInstance().getNation(StringArgumentType.getString(context, "nation"));
+                if (n.isEmpty()) return 0;
+                boolean ok = TownyWarService.declareWar(r.getTown().getNation(), n.get());
+                context.getSource().sendSuccess(() -> Component.literal(ok ? "War declared." : "War already active."), false);
+                return ok ? 1 : 0;
+            }))));
+        dispatcher.register(Commands.literal("townypapi")
+            .requires(source -> source.getPlayer() != null)
+            .then(Commands.argument("placeholder", StringArgumentType.word())
+                .executes(context -> { var p = context.getSource().getPlayer(); var r = TownyUniverse.getInstance().registerResident(p.getUUID(), p.getName().getString()); String key = StringArgumentType.getString(context, "placeholder"); context.getSource().sendSuccess(() -> Component.literal(key + "=" + TownyPlaceholderService.resolve(r, key)), false); return 1; })));
 
         dispatcher.register(Commands.literal("towny")
             .requires(source -> source.hasPermission(0))

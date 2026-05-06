@@ -74,6 +74,16 @@ public class Config {
         .defineInRange("plotRegenGraceCycles", 1, 1, Integer.MAX_VALUE);
 
 
+
+
+    public static final ModConfigSpec.BooleanValue HUD_ENABLED = BUILDER
+        .comment("Enable Phase-7 HUD actionbar updates.")
+        .define("hudEnabled", true);
+
+    public static final ModConfigSpec.IntValue HUD_INTERVAL_TICKS = BUILDER
+        .comment("HUD refresh interval in ticks.")
+        .defineInRange("hudIntervalTicks", 40, 1, Integer.MAX_VALUE);
+
     public static final ModConfigSpec.IntValue TP_WARMUP_SECONDS = BUILDER
         .comment("Teleport warmup duration in seconds.")
         .defineInRange("tpWarmupSeconds", 5, 0, 300);
