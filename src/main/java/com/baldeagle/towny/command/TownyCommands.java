@@ -1,6 +1,7 @@
 package com.baldeagle.towny.command;
 
 import com.baldeagle.towny.Towny;
+import com.baldeagle.towny.Config;
 import com.baldeagle.towny.command.framework.CommandRegistry;
 import com.baldeagle.towny.command.nation.NationAddCommand;
 import com.baldeagle.towny.command.nation.NationKickCommand;
@@ -25,9 +26,12 @@ import com.baldeagle.towny.command.town.TownDeleteCommand;
 import com.baldeagle.towny.command.town.TownUnclaimCommand;
 import com.baldeagle.towny.command.town.TownRankCommand;
 import com.baldeagle.towny.command.town.TownSetCommand;
+import com.baldeagle.towny.command.town.TownSpawnCommand;
 import com.baldeagle.towny.command.town.TownNationJoinCommand;
 import com.baldeagle.towny.command.town.TownNationLeaveCommand;
 import com.baldeagle.towny.object.resident.Resident;
+import com.baldeagle.towny.object.economy.TownyEconomyHandler;
+import com.baldeagle.towny.object.economy.TownyEconomyService;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.universe.TownyUniverse;
 import com.mojang.brigadier.CommandDispatcher;
@@ -60,6 +64,7 @@ public final class TownyCommands {
         REGISTRY.register("town", new TownDeleteCommand());
         REGISTRY.register("town", new TownRankCommand());
         REGISTRY.register("town", new TownSetCommand());
+        REGISTRY.register("town", new TownSpawnCommand());
         REGISTRY.register("town", new TownNationJoinCommand());
         REGISTRY.register("town", new TownNationLeaveCommand());
         REGISTRY.register("town", new TownKickCommand());
@@ -131,6 +136,9 @@ public final class TownyCommands {
                 .then(Commands.argument("key", StringArgumentType.word())
                     .then(Commands.argument("value", StringArgumentType.greedyString())
                         .executes(context -> REGISTRY.execute("town", "set", context)))))
+            .then(Commands.literal("spawn")
+                .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
+                .executes(context -> REGISTRY.execute("town", "spawn", context)))
             .then(Commands.literal("delete")
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
                 .executes(context -> REGISTRY.execute("town", "delete", context)))
@@ -225,6 +233,21 @@ public final class TownyCommands {
                     "Phase 3 command set complete: town/resident/nation/plot core commands enabled"
                 ), false);
                 return 1;
-            }));
+            })
+            .then(Commands.literal("economy")
+                .executes(context -> {
+                    String provider = Config.ECONOMY_PROVIDER.get();
+                    int delinquentCount = TownyEconomyService.delinquentResidentCount();
+                    int txCount = TownyEconomyService.recentTransactions().size();
+                    context.getSource().sendSuccess(() -> Component.literal(
+                        "Economy provider=" + provider
+                            + ", resident tax interval=" + Config.TAX_COLLECTION_INTERVAL_TICKS.get() + " ticks"
+                            + ", nation tax=" + Config.NATION_TAX_PERCENT.get() + "%"
+                            + ", delinquent residents=" + delinquentCount
+                            + ", tx log entries=" + txCount
+                            + ", sample format=" + TownyEconomyHandler.provider().format(12_345)
+                    ), false);
+                    return 1;
+                })));
     }
 }

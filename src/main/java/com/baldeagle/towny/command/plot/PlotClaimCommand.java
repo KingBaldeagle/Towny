@@ -2,6 +2,8 @@ package com.baldeagle.towny.command.plot;
 
 import com.baldeagle.towny.command.framework.SubCommand;
 import com.baldeagle.towny.command.framework.TownyCommandContext;
+import com.baldeagle.towny.object.economy.TownyEconomyHandler;
+import com.baldeagle.towny.object.economy.TownyEconomyService;
 import com.baldeagle.towny.object.plot.Plot;
 import com.baldeagle.towny.object.resident.Resident;
 import com.baldeagle.towny.object.town.Town;
@@ -46,8 +48,23 @@ public final class PlotClaimCommand implements SubCommand {
             return context.fail("You can only claim plots inside your own town.");
         }
 
-        if (context.universe().getPlot(worldCoord).isPresent()) {
-            return context.fail("A plot already exists at this location.");
+        Optional<Plot> existingPlot = context.universe().getPlot(worldCoord);
+        if (existingPlot.isPresent()) {
+            Plot plot = existingPlot.get();
+            if (!plot.isForSale()) {
+                return context.fail("A plot already exists at this location.");
+            }
+
+            if (TownyEconomyService.isResidentDelinquent(resident)) {
+                return context.fail("Unable to purchase plot while you have delinquent taxes.");
+            }
+
+            if (!TownyEconomyService.purchasePlot(resident, plot)) {
+                return context.fail(
+                    "Unable to purchase plot. Required " + TownyEconomyHandler.provider().format(plot.getPriceInCopper())
+                );
+            }
+            return context.success("Plot purchased: " + plot.getName());
         }
 
         String plotName = resident.getName() + "-plot";
