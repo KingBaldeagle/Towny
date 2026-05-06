@@ -1,5 +1,6 @@
 package com.baldeagle.towny.command.framework;
 
+import com.baldeagle.towny.service.TownyPermissionService;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,6 +39,9 @@ public final class CommandRegistry {
         SubCommand subCommand = subCommands.get(buildKey(parent, child));
         if (subCommand == null) {
             return 0;
+        }
+        if (!TownyPermissionService.canExecute(typedContext.source(), typedContext.getOrCreatePlayerResidentOrNull(), subCommand.getPermission())) {
+            return typedContext.fail("You do not have permission to use this Towny command.");
         }
         return subCommand.execute(typedContext);
     }
