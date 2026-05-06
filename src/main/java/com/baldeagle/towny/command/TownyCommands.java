@@ -35,6 +35,7 @@ import com.baldeagle.towny.object.economy.TownyEconomyService;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.universe.TownyUniverse;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -43,6 +44,8 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Phase-3 command entry point.
@@ -226,6 +229,65 @@ public final class TownyCommands {
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
                 .executes(context -> REGISTRY.execute("plot", "unclaim", context))));
 
+        dispatcher.register(Commands.literal("jail")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.literal("setlocation")
+                .requires(source -> source.getPlayer() != null)
+                .executes(context -> {
+                    var player = context.getSource().getPlayer();
+                    var resident = TownyUniverse.getInstance().registerResident(player.getUUID(), player.getName().getString());
+                    if (!resident.hasTown() || !resident.isMayor()) {
+                        context.getSource().sendFailure(Component.literal("Only a mayor can set the town jail location."));
+                        return 0;
+                    }
+                    resident.getTown().setJailBlock(com.baldeagle.towny.service.TownyProtectionService.toWorldCoord(player.level(), player.blockPosition()));
+                    context.getSource().sendSuccess(() -> Component.literal("Town jail location set."), false);
+                    return 1;
+                }))
+            .then(Commands.argument("player", StringArgumentType.word())
+                .then(Commands.argument("duration", StringArgumentType.word())
+                    .executes(context -> executeJail(context, false))
+                    .then(Commands.argument("fine", IntegerArgumentType.integer(0))
+                        .executes(context -> executeJail(context, true)))))
+            .then(Commands.literal("info")
+                .then(Commands.argument("player", StringArgumentType.word())
+                    .executes(context -> {
+                        String playerName = StringArgumentType.getString(context, "player");
+                        var targetOpt = TownyUniverse.getInstance().getResident(playerName);
+                        if (targetOpt.isEmpty()) {
+                            context.getSource().sendFailure(Component.literal("Resident not found: " + playerName));
+                            return 0;
+                        }
+                        var target = targetOpt.get();
+                        if (!target.isJailed()) {
+                            context.getSource().sendSuccess(() -> Component.literal(target.getName() + " is not jailed."), false);
+                            return 1;
+                        }
+                        long remaining = Math.max(0L, target.getJailedUntilEpochMillis() - System.currentTimeMillis());
+                        context.getSource().sendSuccess(() -> Component.literal(target.getName() + " jail remaining: " + (remaining / 1000L) + "s"), false);
+                        return 1;
+                    }))));
+
+        dispatcher.register(Commands.literal("unjail")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.argument("player", StringArgumentType.word())
+                .executes(context -> {
+                    String playerName = StringArgumentType.getString(context, "player");
+                    var targetOpt = TownyUniverse.getInstance().getResident(playerName);
+                    if (targetOpt.isEmpty()) {
+                        context.getSource().sendFailure(Component.literal("Resident not found: " + playerName));
+                        return 0;
+                    }
+                    var target = targetOpt.get();
+                    if (!target.isJailed() && target.getJailedUntilEpochMillis() == 0L) {
+                        context.getSource().sendFailure(Component.literal("Resident is not jailed."));
+                        return 0;
+                    }
+                    target.unjail();
+                    context.getSource().sendSuccess(() -> Component.literal("Released " + target.getName() + " from jail."), false);
+                    return 1;
+                })));
+
         dispatcher.register(Commands.literal("towny")
             .requires(source -> source.hasPermission(0))
             .executes(context -> {
@@ -250,4 +312,64 @@ public final class TownyCommands {
                     return 1;
                 })));
     }
+
+    private static int executeJail(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context, boolean withFine) {
+        String playerName = StringArgumentType.getString(context, "player");
+        String durationInput = StringArgumentType.getString(context, "duration");
+        long durationMillis = parseDurationMillis(durationInput);
+        if (durationMillis <= 0L) {
+            context.getSource().sendFailure(Component.literal("Invalid duration. Use formats like 10m, 2h, 1d."));
+            return 0;
+        }
+        var targetOpt = TownyUniverse.getInstance().getResident(playerName);
+        if (targetOpt.isEmpty()) {
+            context.getSource().sendFailure(Component.literal("Resident not found: " + playerName));
+            return 0;
+        }
+        var target = targetOpt.get();
+        if (target.isJailed()) {
+            context.getSource().sendFailure(Component.literal("Resident is already jailed."));
+            return 0;
+        }
+        if (withFine) {
+            int fine = IntegerArgumentType.getInteger(context, "fine");
+            if (fine > 0) {
+                String targetAccount = TownyEconomyHandler.accountIdForPlayer(target.getUUID());
+                if (!TownyEconomyHandler.provider().withdraw(targetAccount, fine)) {
+                    context.getSource().sendFailure(Component.literal("Resident cannot pay fine of " + fine + " copper."));
+                    return 0;
+                }
+            }
+        }
+        target.jailForMillis(durationMillis);
+        context.getSource().sendSuccess(() -> Component.literal("Jailed " + target.getName() + " for " + durationInput + "."), false);
+        return 1;
+    }
+
+    private static long parseDurationMillis(String input) {
+        if (input == null || input.isBlank()) {
+            return -1L;
+        }
+        String value = input.trim().toLowerCase();
+        if (value.length() < 2) {
+            return -1L;
+        }
+        char unit = value.charAt(value.length() - 1);
+        long amount;
+        try {
+            amount = Long.parseLong(value.substring(0, value.length() - 1));
+        } catch (NumberFormatException ignored) {
+            return -1L;
+        }
+        if (amount <= 0L) {
+            return -1L;
+        }
+        return switch (unit) {
+            case 'm' -> TimeUnit.MINUTES.toMillis(amount);
+            case 'h' -> TimeUnit.HOURS.toMillis(amount);
+            case 'd' -> TimeUnit.DAYS.toMillis(amount);
+            default -> -1L;
+        };
+    }
+
 }

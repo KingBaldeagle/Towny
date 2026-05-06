@@ -52,6 +52,12 @@ public class DirectoryJsonTownyDataSource implements TownyDataSource {
         for (ResidentData data : readAll(residentsDir, ResidentData.class)) {
             Resident resident = universe.registerResident(UUID.fromString(data.uuid), data.name);
             resident.setDelinquent(data.delinquent);
+            if (data.jailedUntilEpochMillis > 0L) {
+                long remaining = data.jailedUntilEpochMillis - System.currentTimeMillis();
+                if (remaining > 0L) {
+                    resident.jailForMillis(remaining);
+                }
+            }
         }
 
         for (TownData data : readAll(townsDir, TownData.class)) {
@@ -157,6 +163,7 @@ public class DirectoryJsonTownyDataSource implements TownyDataSource {
             data.uuid = resident.getUUID().toString();
             data.name = resident.getName();
             data.delinquent = resident.isDelinquent();
+            data.jailedUntilEpochMillis = resident.getJailedUntilEpochMillis();
             write(residentsDir.resolve(data.uuid + ".json"), data);
         }
 
@@ -306,6 +313,7 @@ public class DirectoryJsonTownyDataSource implements TownyDataSource {
         String uuid;
         String name;
         boolean delinquent;
+        long jailedUntilEpochMillis;
     }
 
     private static class TownData {
