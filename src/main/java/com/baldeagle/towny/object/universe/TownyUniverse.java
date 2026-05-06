@@ -132,6 +132,34 @@ public final class TownyUniverse {
         return town;
     }
 
+    public boolean disbandTown(Town town) {
+        if (town == null) {
+            return false;
+        }
+
+        if (town.hasNation()) {
+            Nation nation = town.getNation();
+            if (nation != null) {
+                nation.removeTown(town);
+            }
+        }
+
+        for (Resident resident : town.getResidents()) {
+            if (resident.getTown() == town) {
+                resident.setTown(null);
+            }
+        }
+
+        town.getTownBlocks().keySet().forEach(coord -> {
+            townBlocksByWorldCoord.remove(coord);
+            plotsByWorldCoord.remove(coord);
+        });
+
+        townsById.remove(town.getUUID());
+        townsByName.remove(normalize(town.getName()));
+        return true;
+    }
+
     public boolean addResidentToTown(Resident resident, Town town) {
         if (resident == null || town == null || resident.hasTown()) {
             return false;

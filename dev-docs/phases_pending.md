@@ -58,6 +58,13 @@ Status legend:
 
 ### Not done (must finish)
 - [ ] **Town command parity**
+  - [x] `/town invite <player>`
+  - [x] `/town accept`
+  - [x] `/town deny` (optional but expected)
+  - [x] `/town rank ...`
+  - [x] `/town set ...`
+  - [x] `/town delete`
+  - [x] Nation join/leave flows via town commands
   - [ ] `/town invite <player>`
   - [ ] `/town accept`
   - [ ] `/town deny` (optional but expected)
