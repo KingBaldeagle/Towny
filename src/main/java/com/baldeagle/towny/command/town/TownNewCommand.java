@@ -5,6 +5,7 @@ import com.baldeagle.towny.command.framework.SubCommand;
 import com.baldeagle.towny.command.framework.TownyCommandContext;
 import com.baldeagle.towny.object.economy.TownyEconomyHandler;
 import com.baldeagle.towny.object.resident.Resident;
+import com.baldeagle.towny.object.town.Town;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class TownNewCommand implements SubCommand {
@@ -44,12 +45,16 @@ public final class TownNewCommand implements SubCommand {
             );
         }
 
+        final Town town;
         try {
-            context.universe().createTown(townName, resident);
+            town = context.universe().createTown(townName, resident);
         } catch (IllegalStateException | IllegalArgumentException ex) {
             TownyEconomyHandler.provider().deposit(playerAccountId, townCreationCost);
             return context.fail("Unable to create town: " + ex.getMessage());
         }
+
+        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getUUID());
+        TownyEconomyHandler.provider().deposit(townAccountId, townCreationCost);
 
         return context.success(
             "Town created: " + townName + " (cost " + TownyEconomyHandler.provider().format(townCreationCost) + ")"

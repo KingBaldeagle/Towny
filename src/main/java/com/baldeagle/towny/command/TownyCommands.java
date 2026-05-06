@@ -1,6 +1,7 @@
 package com.baldeagle.towny.command;
 
 import com.baldeagle.towny.Towny;
+import com.baldeagle.towny.Config;
 import com.baldeagle.towny.command.framework.CommandRegistry;
 import com.baldeagle.towny.command.nation.NationAddCommand;
 import com.baldeagle.towny.command.nation.NationKickCommand;
@@ -28,6 +29,8 @@ import com.baldeagle.towny.command.town.TownSetCommand;
 import com.baldeagle.towny.command.town.TownNationJoinCommand;
 import com.baldeagle.towny.command.town.TownNationLeaveCommand;
 import com.baldeagle.towny.object.resident.Resident;
+import com.baldeagle.towny.object.economy.TownyEconomyHandler;
+import com.baldeagle.towny.object.economy.TownyEconomyService;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.universe.TownyUniverse;
 import com.mojang.brigadier.CommandDispatcher;
@@ -225,6 +228,21 @@ public final class TownyCommands {
                     "Phase 3 command set complete: town/resident/nation/plot core commands enabled"
                 ), false);
                 return 1;
-            }));
+            })
+            .then(Commands.literal("economy")
+                .executes(context -> {
+                    String provider = Config.ECONOMY_PROVIDER.get();
+                    int delinquentCount = TownyEconomyService.delinquentResidentCount();
+                    int txCount = TownyEconomyService.recentTransactions().size();
+                    context.getSource().sendSuccess(() -> Component.literal(
+                        "Economy provider=" + provider
+                            + ", resident tax interval=" + Config.TAX_COLLECTION_INTERVAL_TICKS.get() + " ticks"
+                            + ", nation tax=" + Config.NATION_TAX_PERCENT.get() + "%"
+                            + ", delinquent residents=" + delinquentCount
+                            + ", tx log entries=" + txCount
+                            + ", sample format=" + TownyEconomyHandler.provider().format(12_345)
+                    ), false);
+                    return 1;
+                })));
     }
 }

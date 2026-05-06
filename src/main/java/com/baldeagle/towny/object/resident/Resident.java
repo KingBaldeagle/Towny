@@ -14,6 +14,7 @@ public class Resident extends TownyObject {
     private String surname = "";
     private boolean online = false;
     private boolean npc = false;
+    private boolean delinquent = false;
 
     public Resident(UUID uuid, String name) {
         super(uuid, name);
@@ -39,6 +40,9 @@ public class Resident extends TownyObject {
 
     public boolean isNPC() { return npc; }
     public void setNPC(boolean npc) { this.npc = npc; }
+
+    public boolean isDelinquent() { return delinquent; }
+    public void setDelinquent(boolean delinquent) { this.delinquent = delinquent; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title != null ? title : ""; }
