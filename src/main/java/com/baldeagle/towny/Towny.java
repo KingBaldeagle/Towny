@@ -1,6 +1,5 @@
 package com.baldeagle.towny;
 
-import com.baldeagle.towny.object.economy.TownyEconomyHandler;
 import com.mojang.logging.LogUtils;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -26,6 +25,5 @@ public class Towny {
 
     public Towny(ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-        TownyEconomyHandler.initializeFromConfig();
     }
 }
