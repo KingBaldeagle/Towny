@@ -67,5 +67,6 @@ public final class TownyPlayerListener {
 
         TownyUniverse universe = TownyUniverse.getInstance();
         universe.getResident(player.getUUID()).ifPresent(resident -> resident.setOnline(false));
+        TownyHudTickListener.clearPlayerArea(player);
     }
 }
