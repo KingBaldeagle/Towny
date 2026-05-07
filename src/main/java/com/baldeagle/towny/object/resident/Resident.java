@@ -15,6 +15,7 @@ public class Resident extends TownyObject {
     private boolean online = false;
     private boolean npc = false;
     private boolean delinquent = false;
+    private long jailedUntilEpochMillis = 0L;
 
     public Resident(UUID uuid, String name) {
         super(uuid, name);
@@ -43,6 +44,25 @@ public class Resident extends TownyObject {
 
     public boolean isDelinquent() { return delinquent; }
     public void setDelinquent(boolean delinquent) { this.delinquent = delinquent; }
+
+    public boolean isJailed() {
+        return jailedUntilEpochMillis > System.currentTimeMillis();
+    }
+
+    public long getJailedUntilEpochMillis() {
+        return jailedUntilEpochMillis;
+    }
+
+    public void jailForMillis(long durationMillis) {
+        if (durationMillis <= 0L) {
+            throw new IllegalArgumentException("durationMillis must be > 0");
+        }
+        this.jailedUntilEpochMillis = System.currentTimeMillis() + durationMillis;
+    }
+
+    public void unjail() {
+        this.jailedUntilEpochMillis = 0L;
+    }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title != null ? title : ""; }

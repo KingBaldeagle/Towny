@@ -24,19 +24,6 @@ dependencies {
     implementation "maven.modrinth:lightmans-currency:1.21-2.3.0.4e"
 }
 
-def modsTomlFile = file('src/main/resources/META-INF/mods.toml')
-
-tasks.register('processModsToml') {
-    doLast {
-        if (!modsTomlFile.exists()) {
-            modsTomlFile.parentFile.mkdirs()
-            modsTomlFile.text = '''
-mods.toml placeholder
-'''
-        }
-    }
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -55,5 +42,4 @@ jar {
         )
     }
     from(sourceSets.main.output)
-    from(processModsToml)
 }
