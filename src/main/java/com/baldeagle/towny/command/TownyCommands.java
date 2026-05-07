@@ -8,6 +8,7 @@ import com.baldeagle.towny.command.nation.NationKickCommand;
 import com.baldeagle.towny.command.nation.NationLeaveCommand;
 import com.baldeagle.towny.command.nation.NationListCommand;
 import com.baldeagle.towny.command.nation.NationNewCommand;
+import com.baldeagle.towny.command.nation.NationShowCommand;
 import com.baldeagle.towny.command.plot.PlotClaimCommand;
 import com.baldeagle.towny.command.plot.PlotUnclaimCommand;
 import com.baldeagle.towny.command.resident.ResidentSelfCommand;
@@ -20,6 +21,7 @@ import com.baldeagle.towny.command.town.TownKickCommand;
 import com.baldeagle.towny.command.town.TownLeaveCommand;
 import com.baldeagle.towny.command.town.TownListCommand;
 import com.baldeagle.towny.command.town.TownNewCommand;
+import com.baldeagle.towny.command.town.TownShowCommand;
 import com.baldeagle.towny.command.town.TownAcceptCommand;
 import com.baldeagle.towny.command.town.TownDenyCommand;
 import com.baldeagle.towny.command.town.TownDeleteCommand;
@@ -62,6 +64,7 @@ public final class TownyCommands {
     static {
         REGISTRY.register("town", new TownNewCommand());
         REGISTRY.register("town", new TownListCommand());
+        REGISTRY.register("town", new TownShowCommand());
         REGISTRY.register("town", new TownHereCommand());
         REGISTRY.register("town", new TownAddCommand());
         REGISTRY.register("town", new TownInviteCommand());
@@ -83,6 +86,7 @@ public final class TownyCommands {
 
         REGISTRY.register("nation", new NationNewCommand());
         REGISTRY.register("nation", new NationListCommand());
+        REGISTRY.register("nation", new NationShowCommand());
         REGISTRY.register("nation", new NationAddCommand());
         REGISTRY.register("nation", new NationKickCommand());
         REGISTRY.register("nation", new NationLeaveCommand());
@@ -175,7 +179,14 @@ public final class TownyCommands {
                 .executes(context -> REGISTRY.execute("town", "claim", context)))
             .then(Commands.literal("unclaim")
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
-                .executes(context -> REGISTRY.execute("town", "unclaim", context))));
+                .executes(context -> REGISTRY.execute("town", "unclaim", context)))
+            .then(Commands.argument("name", StringArgumentType.word())
+                .requires(source -> source.hasPermission(0))
+                .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                    TownyUniverse.getInstance().getTowns().stream().map(Town::getName),
+                    builder
+                ))
+                .executes(context -> REGISTRY.execute("town", "show", context))));
 
         dispatcher.register(Commands.literal("t")
             .redirect(dispatcher.getRoot().getChild("town")));
@@ -219,7 +230,14 @@ public final class TownyCommands {
                     .executes(context -> REGISTRY.execute("nation", "kick", context))))
             .then(Commands.literal("leave")
                 .requires(source -> source.hasPermission(0) && source.getPlayer() != null)
-                .executes(context -> REGISTRY.execute("nation", "leave", context))));
+                .executes(context -> REGISTRY.execute("nation", "leave", context)))
+            .then(Commands.argument("name", StringArgumentType.word())
+                .requires(source -> source.hasPermission(0))
+                .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                    TownyUniverse.getInstance().getNations().stream().map(com.baldeagle.towny.object.nation.Nation::getName),
+                    builder
+                ))
+                .executes(context -> REGISTRY.execute("nation", "show", context))));
 
         dispatcher.register(Commands.literal("n")
             .redirect(dispatcher.getRoot().getChild("nation")));

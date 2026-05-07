@@ -3,6 +3,7 @@ package com.baldeagle.towny.command.town;
 import com.baldeagle.towny.command.framework.SubCommand;
 import com.baldeagle.towny.command.framework.TownyCommandContext;
 import com.baldeagle.towny.object.resident.Resident;
+import com.baldeagle.towny.object.economy.TownyEconomyHandler;
 import com.baldeagle.towny.object.town.Town;
 import com.baldeagle.towny.object.world.WorldCoord;
 
@@ -33,12 +34,22 @@ public final class TownClaimCommand implements SubCommand {
         }
 
         Town town = resident.getTown();
+        long claimCostInCopper = 5L * 100L;
+        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getName());
+        if (!TownyEconomyHandler.provider().withdraw(townAccountId, claimCostInCopper)) {
+            return context.fail("Unable to claim town block: town bank needs "
+                + TownyEconomyHandler.provider().format(claimCostInCopper)
+                + " in team account '" + town.getName() + "'.");
+        }
+
         try {
             context.universe().claimTownBlock(town, worldCoord);
         } catch (IllegalStateException | IllegalArgumentException ex) {
+            TownyEconomyHandler.provider().deposit(townAccountId, claimCostInCopper);
             return context.fail("Unable to claim town block: " + ex.getMessage());
         }
 
-        return context.success("Claimed town block " + worldCoord.coord() + " for " + town.getName());
+        return context.success("Claimed town block " + worldCoord.coord() + " for " + town.getName()
+            + " (cost " + TownyEconomyHandler.provider().format(claimCostInCopper) + ")");
     }
 }

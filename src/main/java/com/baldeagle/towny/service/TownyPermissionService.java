@@ -11,6 +11,10 @@ import java.util.Set;
  * Phase-8 permission resolver with extensible node handling and optional LuckPerms hook.
  */
 public final class TownyPermissionService {
+    private static final Set<String> ALWAYS_ALLOWED = Set.of(
+        "towny.command.town.new"
+    );
+
     private static final Set<String> MAYOR_ONLY = Set.of(
         "towny.command.town.add",
         "towny.command.town.kick",
@@ -30,6 +34,9 @@ public final class TownyPermissionService {
             return true;
         }
         if (permissionNode == null || permissionNode.isBlank()) {
+            return true;
+        }
+        if (ALWAYS_ALLOWED.contains(permissionNode.toLowerCase())) {
             return true;
         }
 

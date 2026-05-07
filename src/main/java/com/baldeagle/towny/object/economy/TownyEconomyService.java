@@ -31,7 +31,7 @@ public final class TownyEconomyService {
         }
 
         String residentAccountId = TownyEconomyHandler.accountIdForPlayer(resident.getUUID());
-        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getUUID());
+        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getName());
         boolean paid = TownyEconomyHandler.provider().transfer(residentAccountId, townAccountId, taxInCopper);
         if (paid) {
             DELINQUENT_RESIDENTS.remove(resident.getUUID());
@@ -72,7 +72,7 @@ public final class TownyEconomyService {
         for (Nation nation : nations) {
             for (Town town : nation.getTowns()) {
                 long townBalance = TownyEconomyHandler.provider()
-                    .getBalance(TownyEconomyHandler.accountIdForTown(town.getUUID()));
+                    .getBalance(TownyEconomyHandler.accountIdForTown(town.getName()));
                 long contribution = (townBalance * clampedPercent) / 100L;
                 if (contribution <= 0L) {
                     continue;
@@ -93,7 +93,7 @@ public final class TownyEconomyService {
             throw new IllegalArgumentException("taxInCopper must be >= 0");
         }
 
-        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getUUID());
+        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getName());
         String nationAccountId = TownyEconomyHandler.accountIdForNation(nation.getUUID());
         boolean paid = TownyEconomyHandler.provider().transfer(townAccountId, nationAccountId, taxInCopper);
         record("nation_tax", townAccountId, nationAccountId, taxInCopper, paid, nation.getName());
@@ -118,7 +118,7 @@ public final class TownyEconomyService {
 
         long price = plot.getPriceInCopper();
         String buyerAccountId = TownyEconomyHandler.accountIdForPlayer(buyer.getUUID());
-        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getUUID());
+        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getName());
 
         if (!TownyEconomyHandler.provider().transfer(buyerAccountId, townAccountId, price)) {
             record("plot_purchase", buyerAccountId, townAccountId, price, false, plot.getName());

@@ -57,7 +57,7 @@ public final class TownyPhase6TickListener {
             if (upkeep <= 0L) {
                 continue;
             }
-            String townAccountId = TownyEconomyHandler.accountIdForTown(town.getUUID());
+            String townAccountId = TownyEconomyHandler.accountIdForTown(town.getName());
             boolean paid = TownyEconomyHandler.provider().withdraw(townAccountId, upkeep);
             if (!paid) {
                 Towny.LOGGER.warn("Town {} failed upkeep payment of {}.", town.getName(), upkeep);
