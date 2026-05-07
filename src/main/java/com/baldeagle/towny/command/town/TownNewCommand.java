@@ -7,6 +7,7 @@ import com.baldeagle.towny.object.economy.TownyEconomyHandler;
 import com.baldeagle.towny.object.economy.provider.LightmansCurrencyProvider;
 import com.baldeagle.towny.object.resident.Resident;
 import com.baldeagle.towny.object.town.Town;
+import com.baldeagle.towny.object.world.WorldCoord;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class TownNewCommand implements SubCommand {
@@ -27,8 +28,12 @@ public final class TownNewCommand implements SubCommand {
             return context.fail("This command can only be used by a player.");
         }
 
-        if (context.getTownBlockAtPlayerOrEmpty().isEmpty()) {
-            return context.fail("You must stand on a claimed TownBlock to create a town.");
+        WorldCoord worldCoord = context.getPlayerWorldCoordOrNull();
+        if (worldCoord == null) {
+            return context.fail("Unable to resolve your world coordinate.");
+        }
+        if (context.getTownBlockAtPlayerOrEmpty().isPresent()) {
+            return context.fail("You must stand on an unclaimed TownBlock to create a town.");
         }
 
         String townName = context.getString("name");
@@ -50,6 +55,14 @@ public final class TownNewCommand implements SubCommand {
         try {
             town = context.universe().createTown(townName, resident);
         } catch (IllegalStateException | IllegalArgumentException ex) {
+            TownyEconomyHandler.provider().deposit(playerAccountId, townCreationCost);
+            return context.fail("Unable to create town: " + ex.getMessage());
+        }
+
+        try {
+            context.universe().claimTownBlock(town, worldCoord);
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            context.universe().disbandTown(town);
             TownyEconomyHandler.provider().deposit(playerAccountId, townCreationCost);
             return context.fail("Unable to create town: " + ex.getMessage());
         }
