@@ -1,7 +1,9 @@
 package com.baldeagle.towny.command.framework;
 
+import com.baldeagle.towny.service.TownyPermissionService;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,11 +26,24 @@ public final class CommandRegistry {
     }
 
     public int execute(String parent, String child, CommandContext<CommandSourceStack> context) {
+        TownyCommandContext typedContext = new TownyCommandContext(context);
+        if (!"jail".equalsIgnoreCase(parent) && !"unjail".equalsIgnoreCase(parent)) {
+            ServerPlayer player = typedContext.getPlayerOrNull();
+            if (player != null) {
+                if (typedContext.getOrCreatePlayerResidentOrNull() != null
+                    && typedContext.getOrCreatePlayerResidentOrNull().isJailed()) {
+                    return typedContext.fail("You cannot use Towny commands while jailed.");
+                }
+            }
+        }
         SubCommand subCommand = subCommands.get(buildKey(parent, child));
         if (subCommand == null) {
             return 0;
         }
-        return subCommand.execute(new TownyCommandContext(context));
+        if (!TownyPermissionService.canExecute(typedContext.source(), typedContext.getOrCreatePlayerResidentOrNull(), subCommand.getPermission())) {
+            return typedContext.fail("You do not have permission to use this Towny command.");
+        }
+        return subCommand.execute(typedContext);
     }
 
     private String buildKey(String parent, String child) {

@@ -24,6 +24,7 @@ public class Town extends Government {
     private final Set<Resident> residents = new HashSet<>();
     private final Map<WorldCoord, TownBlock> townBlocks = new ConcurrentHashMap<>();
     private WorldCoord homeBlock;
+    private WorldCoord jailBlock;
 
     public Town(UUID uuid, String name, Resident mayor) {
         super(uuid, name);
@@ -75,6 +76,8 @@ public class Town extends Government {
     public boolean hasHomeBlock() { return homeBlock != null; }
     public WorldCoord getHomeBlock() { return homeBlock; }
     public void setHomeBlock(WorldCoord homeBlock) { this.homeBlock = homeBlock; }
+    public WorldCoord getJailBlock() { return jailBlock; }
+    public void setJailBlock(WorldCoord jailBlock) { this.jailBlock = jailBlock; }
 
     public boolean addTownBlock(TownBlock townBlock) {
         if (townBlock == null) {
