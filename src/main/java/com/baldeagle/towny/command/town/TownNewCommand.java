@@ -67,9 +67,9 @@ public final class TownNewCommand implements SubCommand {
             return context.fail("Unable to create town: " + ex.getMessage());
         }
 
-        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getUUID());
+        String townAccountId = TownyEconomyHandler.accountIdForTown(town.getName());
         if (TownyEconomyHandler.provider() instanceof LightmansCurrencyProvider lcProvider) {
-            lcProvider.ensureTeamAccount(townAccountId, player, "town_" + town.getName());
+            lcProvider.ensureTeamAccount(townAccountId, player, town.getName());
         }
         TownyEconomyHandler.provider().deposit(townAccountId, townCreationCost);
 

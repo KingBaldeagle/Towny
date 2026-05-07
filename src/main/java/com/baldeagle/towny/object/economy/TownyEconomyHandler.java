@@ -45,8 +45,8 @@ public final class TownyEconomyHandler {
         return "player:" + playerUuid;
     }
 
-    public static String accountIdForTown(UUID townUuid) {
-        return "town:" + townUuid;
+    public static String accountIdForTown(String townName) {
+        return "town:" + townName.trim().toLowerCase();
     }
 
     public static String accountIdForNation(UUID nationUuid) {
